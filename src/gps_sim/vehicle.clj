@@ -8,15 +8,11 @@
             [gps-sim.utils.numeric :refer [round-places num-decimals] :as num]
             [gps-sim.utils.sequences :refer [zipjuxt]]
             [gps-sim.utils.angles :refer [dms->radians radians->dms]]
-            [gps-sim.utils.schemas :refer [VehicleInput VehicleOutput data-coercion-matcher]]
+            [gps-sim.utils.schemas :refer [VehicleInput DMSCoordinateList parse-vehicle-input parse-dms-list]]
             [gps-sim.utils.matrix :refer [lerp]]))
 
-(def parse-input (coerce/coercer VehicleInput data-coercion-matcher))
-(def parse-output (coerce/coercer VehicleOutput data-coercion-matcher))
-
-(s/defn run :- VehicleOutput
+(s/defn run :- DMSCoordinateList
   [input :- VehicleInput]
-
   (let [start-time (mget input 0 0)
         end-time (mget input 0 1)
         steps (mget input 0 2)
@@ -25,8 +21,6 @@
         end-point (->> input first (drop 3))
         output-bounds (matrix [(concat [start-time] b12)
                                (concat [end-time] end-point)])
-        ;; TODO change bounds
-        ;; degree-bounds (coordinates->radians output-bounds)
         radian-bounds (dms->radians output-bounds)
         interpolation (lerp radian-bounds step-size)
         ;; TODO this is probably not needed with coercion
@@ -39,8 +33,7 @@
                         r
                         ))
                      (rows interpolation))
-        output (radians->dms rounded)
-        ]
+        output (radians->dms rounded)]
     ;;(println "---- run")
     ;;(println "time" start-time end-time)
     ;;(println "step-size" step-size)
@@ -49,17 +42,10 @@
     ;;(println "----")
     ;;(pm (take 5 output))
     ;;(pm (last output))
-
-    (parse-output output)
-    )
-
-
-  )
+    (parse-dms-list output)))
 
 (defn -main [& args]
   (let [input (stdin->matrix)]
-    (println "vehicle input" input)
-    (run (parse-input input))
+    (run (parse-vehicle-input input))
     ;; TODO (-> stdin->matrix partition-path matrix->stdout)
-    :ok
-    ))
+    :ok))

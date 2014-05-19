@@ -66,18 +66,23 @@
                 (s/one BigDecimal "altitude")
                 (s/one BigDecimal "phase")])
 
+(def CartesianCoordinate [(s/one (BoundedInt 0 24) "satellite_index")
+                          (s/one BigDecimal "time")
+                          (s/one BigDecimal "x")
+                          (s/one BigDecimal "y")
+                          (s/one BigDecimal "z")])
+
 (def Constants {:pi BigDecimal
                 :c BigDecimal
                 :R BigDecimal
                 :s BigDecimal})
 
 (def DataFile [BigDecimal])
-
 (def VehicleInput [(s/one DMSPath "input")])
-(def VehicleOutput [DMSCoordinate])
+(def DMSCoordinateList [DMSCoordinate])
+(def CartesianCoordinateList [CartesianCoordinate])
 
-(def SatelliteInput [DMSCoordinate])
-(def SatelliteOutput [])
-
-(def ReceiverInput [])
-(def ReceiverOutput [])
+(def parse-vehicle-input (coerce/coercer VehicleInput data-coercion-matcher))
+(def parse-data (coerce/coercer DataFile data-coercion-matcher))
+(def parse-dms-list (coerce/coercer DMSCoordinateList data-coercion-matcher))
+(def parse-cartesian-list (coerce/coercer CartesianCoordinateList data-coercion-matcher))
