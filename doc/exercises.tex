@@ -1,0 +1,128 @@
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
+%\geometry{landscape}                		% Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}				% Use pdf, png, jpg, or eps§ with pdflatex; use eps in DVI mode
+								% TeX will automatically convert eps --> pdf in pdflatex		
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+\usepackage{minted}
+\usepackage{hyperref}
+
+\title{Exercises}
+\author{Paul English}
+%\date{}							% Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+%\section{}
+%\subsection{}
+
+\begin{enumerate}
+\item[Exercise 1.] Find a formula that describes the trajectory of the point $\mathbf{O}$ in cartesian coordinates as a function of time.
+
+\[
+\mathbf{x}(t) = R \left[ \mathbf{u} cos\left(\frac{2 \pi t}{p}\right) + \mathbf{v} sin\left(\frac{2 \pi t}{p}\right) \right]
+\]
+where $R$ is the radius of the earth, $p$ is the period of a sidereal day, $\mathbf{u}$ is the latitude of our coordinate, and $\mathbf{v}$ is the longitude of our coordinate.
+% TODO
+
+\item[Exercise 2.] Write a program that converts angles from degrees, minutes, and seconds to radians and vice versa. Make sure your program does what it's supposed to do.
+
+\begin{minted}[mathescape,
+               linenos,
+               numbersep=5pt,
+               gobble=2,
+               frame=lines,
+               framesep=2mm]{clojure}
+  (s/defn dms->radians :- RadCoordinateList
+    [A :- DMSCoordinateList]
+    (let [times (mmul A (transpose [[1 0 0 0 0 0 0 0 0 0]]))
+          orientations (mmul A (transpose [[0 0 0 0 1 0 0 0 0 0]
+                                           [0 0 0 0 0 0 0 0 1 0]]))
+          ;; TODO we should be able combine orientations & $\pi$/180 into this transform
+          degrees (with-precision 20
+                    (mmul A (transpose [[0 1 1/60 1/3600 0 0 0 0 0 0]
+                                        [0 0 0 0 0 1 1/60 1/3600 0 0]])))
+          heights (mmul A (transpose [[0 0 0 0 0 0 0 0 0 1]]))
+          radians (* degrees orientations (repeat (first (shape A))
+                                                  [(/ pi 180) (/ pi 180)]))]
+      (parse-rad-list
+       (join-1 times radians heights))))
+
+  (s/defn radians->dms :- DMSCoordinateList
+    [A :- RadCoordinateList]
+    (let [times (mmul A (transpose [[1 0 0 0]]))
+          heights (mmul A (transpose [[0 0 0 1]]))
+          degrees-decimal (mmul A (transpose [[0 (/ 180 pi) 0 0]
+                                              [0 0 (/ 180 pi) 0]]))
+          orientations (emap #(if (pos? %) 1 -1) degrees-decimal)
+          positive-degrees (emap abs degrees-decimal)
+          degrees (emap #(Math/floor %) positive-degrees)
+          minutes-decimal (* 60 (- positive-degrees degrees))
+          minutes (emap #(Math/floor %) minutes-decimal)
+          seconds (* 60 (- minutes-decimal minutes))]
+      (parse-dms-list
+       (join-1 times
+               (join-1-interleave degrees minutes seconds orientations)
+               heights))))
+\end{minted}
+
+Full source here: \url{https://github.com/log0ymxm/gps-sim/blob/master/src/gps_sim/utils/angles.clj}
+
+Test cases available here: \url{https://github.com/log0ymxm/gps-sim/blob/master/test/gps_sim/utils/angles_test.clj}
+
+\item[Exercise 3.] Find a formula that converts position as given in (8) at time $t = 0$ into cartesian coordinates.
+
+In (8) we have access to latitude $\psi$ and longitude $\lambda$. We can calculate the cartesian coordinates by transforming from spherical coordinates as follows,
+\[\begin{aligned}
+x &= \rho \, sin(\phi) cos(\theta) \\ 
+y &= \rho \, sin(\phi) sin(\theta) \\
+z &= \rho \, cos(\phi)
+\end{aligned}
+\]
+
+Where $\rho = (R + h)$, $\phi$ is the radian representation of our latitude $\psi$, and $\theta$ is the radian representation of our longitude $\lambda$.
+
+% TODO
+
+\item[Exercise 4.] Find a formula that converts position and general time $t$ as given in (8) into cartesian coordinates.
+
+% TODO do we need time to find cartesian coordinates???
+
+\item[Exercise 5.] Find a formula that converts a position given in cartesian coordinates at time $t = 0$ into a position of the form (8).
+
+% TODO cartesian->rad
+% - rad->dms
+
+\item[Exercise 6.] Find a formula that converts general time $t$ and a position given in cartesian coordinates into a position of the form (8).
+
+% seriously we need time here again?
+
+\item[Exercise 7.] Find a formula that describes the trajectory of lamp post B12 in cartesian coordinates as a function of time.
+
+\item[Exercise 8.] Given a point $\mathbf{x}$ on earth and a point $\mathbf{s}$ in space, both in cartesian coordinates, find a condition that tells you whether $\mathbf{s}$ as viewed from $\mathbf{x}$ is above the horizon.
+
+\item[Exercise 9.] Discuss how to compute $t_S$ and $\mathbf{x}_S$.
+
+\item[Exercise 10.] Suppose you have data of the form from (11) from 4 satellites. Write down a set of four equations whose solutions are the position of the vehicle in cartesian coordinates, and $t_V$
+
+\item[Exercise 11.] Suppose you have data of the form (11) from more than 4 satellites. Write down a least squares problem whose solution the position of the vehicle in cartesian coordinates, and $t_V$.
+
+\item[Exercise 12.] Find a formula for the \textit{ground track} of satellite 1, i.e. the position in geographic coordinates directly underneath the satellite on the surface of the earth, as a function of time. Do you notice anything particular? What is the significance of the orbital period being exactly one half sidereal day?
+
+\item[Exercise 13.] Find a precise description of Newton's method as it is applied to the nonlinear system obtained by processing data from 4 satellites, as derived in an earlier exercise. Your answer should include an explicit specification of the derivatives involved.
+
+\item[Exercise 14.] Similarly, find Newton's method for the nonlinear system obtained from the least squares approach. Again, your answer should include an explicit specification of the derivatives involved.
+
+\item[Exercise 15.] Think about the number of solutions obtained by analyzing four satellite signals with an unknown vehicle time $t_V$. This is an open ended question that will not be graded!
+
+\item[Exercise 16.] I gave an early draft of this assignment to my friend Meg Ikkal Anna Liszt. After muttering about the federal deficit she said that she has been talking to the Air Force (who operate GPS) for years. She does not understand why they are being so hard on themselves. She could save them billions of dollars because to determine position and altitude you only need three satellites, not four! Three satellites would give you three components of position, once you know position you can compute true run time to the satellite, and from that you can compute the current time. She thinks that the Air Force is not implementing this approach because they don't want to pay her fee of 10\% of the savings in launch costs of satellites alone. What do you think of this?
+
+\item[Exercise 17.] After venting her frustration about the federal deficit Meg went to task with \textit{me}. She said that ``you academic types'' like to be so cumbersome. She thinks we don't use ``common sense'' because the very phrase isn't rooted in Latin or Greek. Why, she says, do I have to have integers \textbf{NS} and \textbf{EW} to indicate which hemisphere I'm on? Why, she says, don't I just make the degrees positive or negative? Indeed, why not?
+
+\end{enumerate}
+
+\end{document}  
