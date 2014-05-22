@@ -56,6 +56,11 @@
                     (s/one (s/enum 1 -1) "EW")
                     (s/one (BoundedReal -10000 10000000) "height")])
 
+(def RadCoordinate [(s/one BigDecimal "time")
+                    (s/one BigDecimal "psi")
+                    (s/one BigDecimal "lambda")
+                    (s/one (BoundedReal -10000 10000000) "height")])
+
 (def Satellite [(s/one BigDecimal "u_1")
                 (s/one BigDecimal "u_2")
                 (s/one BigDecimal "u_3")
@@ -66,11 +71,15 @@
                 (s/one BigDecimal "altitude")
                 (s/one BigDecimal "phase")])
 
-(def CartesianCoordinate [(s/one (BoundedInt 0 24) "satellite_index")
-                          (s/one BigDecimal "time")
-                          (s/one BigDecimal "x")
+(def CartesianCoordinate [(s/one BigDecimal "x")
                           (s/one BigDecimal "y")
                           (s/one BigDecimal "z")])
+
+(def CartesianSatelliteCoordinate [(s/one (BoundedInt 0 24) "satellite_index")
+                                   (s/one BigDecimal "time")
+                                   (s/one BigDecimal "x")
+                                   (s/one BigDecimal "y")
+                                   (s/one BigDecimal "z")])
 
 (def Constants {:pi BigDecimal
                 :c BigDecimal
@@ -81,8 +90,13 @@
 (def VehicleInput [(s/one DMSPath "input")])
 (def DMSCoordinateList [DMSCoordinate])
 (def CartesianCoordinateList [CartesianCoordinate])
+(def CartesianSatelliteList [CartesianSatelliteCoordinate])
+(def SatelliteList [Satellite])
+(def RadCoordinateList [RadCoordinate])
 
 (def parse-vehicle-input (coerce/coercer VehicleInput data-coercion-matcher))
 (def parse-data (coerce/coercer DataFile data-coercion-matcher))
 (def parse-dms-list (coerce/coercer DMSCoordinateList data-coercion-matcher))
 (def parse-cartesian-list (coerce/coercer CartesianCoordinateList data-coercion-matcher))
+(def parse-satellite-list (coerce/coercer SatelliteList data-coercion-matcher))
+(def parse-rad-list (coerce/coercer RadCoordinateList data-coercion-matcher))

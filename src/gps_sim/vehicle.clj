@@ -7,8 +7,12 @@
             [gps-sim.utils.io :refer [stdin->matrix]]
             [gps-sim.utils.numeric :refer [round-places num-decimals] :as num]
             [gps-sim.utils.sequences :refer [zipjuxt]]
-            [gps-sim.utils.angles :refer [dms->radians radians->dms]]
-            [gps-sim.utils.schemas :refer [VehicleInput DMSCoordinateList parse-vehicle-input parse-dms-list]]
+            [gps-sim.utils.coordinates :refer [dms->radians radians->dms]]
+            [gps-sim.utils.schemas :refer [VehicleInput
+                                           DMSCoordinateList
+                                           parse-vehicle-input
+                                           parse-dms-list
+                                           parse-rad-list]]
             [gps-sim.utils.matrix :refer [lerp]]))
 
 (s/defn run :- DMSCoordinateList
@@ -21,7 +25,7 @@
         end-point (->> input first (drop 3))
         output-bounds (matrix [(concat [start-time] b12)
                                (concat [end-time] end-point)])
-        radian-bounds (dms->radians output-bounds)
+        radian-bounds (dms->radians (parse-dms-list output-bounds))
         interpolation (lerp radian-bounds step-size)
         ;; TODO this is probably not needed with coercion
         rounded (map (fn [r]
@@ -33,7 +37,7 @@
                         r
                         ))
                      (rows interpolation))
-        output (radians->dms rounded)]
+        output (radians->dms (parse-rad-list rounded))]
     ;;(println "---- run")
     ;;(println "time" start-time end-time)
     ;;(println "step-size" step-size)

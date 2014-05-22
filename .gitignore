@@ -9,3 +9,7 @@ pom.xml.asc
 /.nrepl-port
 data/*
 *.dat
+*.log
+*.aux
+*.out
+*.synctex.gz

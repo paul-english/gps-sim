@@ -12,6 +12,7 @@
             [clojure.string :as str]
             [clojure.test :as test]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
+            [gps-sim.constants :refer [pi tau R c s]]
             [gps-sim.satellite :as s]
             [gps-sim.vehicle :as v]
             [gps-sim.receiver :as r]))
