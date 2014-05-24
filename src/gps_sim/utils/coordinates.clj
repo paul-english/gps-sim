@@ -54,9 +54,9 @@
         lambda (get-column A 2)
         h (get-column A 3)
         rho (+ @R h)
-        x (* rho (sin psi) (cos lambda))
-        y (* rho (sin psi) (sin lambda))
-        z (* rho (cos psi))]
+        x (* rho (cos psi) (cos lambda))
+        y (* rho (cos psi) (sin lambda))
+        z (* rho (sin psi))]
     (parse-cartesian-list (transpose [x y z]))))
 
 (s/defn cartesian->rad :- RadCoordinateList
@@ -66,7 +66,7 @@
         y (get-column A 1)
         z (get-column A 2)
         rho (sqrt (+ (** x 2) (** y 2) (** z 2)))
-        psi (with-precision 20 (acos (/ z rho)))
+        psi (with-precision 20 (asin (/ z rho)))
         lambda (with-precision 20 (atan (/ y x)))
         h (- rho @R)]
     (parse-rad-list (transpose [times psi lambda h]))))
