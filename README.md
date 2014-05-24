@@ -1,7 +1,3 @@
-# Survey of Numerical Analysis Term Project
-
-http://www.math.utah.edu/~pa/5600/tp/
-
 ## Getting Started
 
 To bootstrap the environment and start up a clojure repl,
@@ -22,6 +18,16 @@ To build jars for submission
 ## Testing on Utah servers
 
     ssh <username>@xserver.math.utah.edu
+    wget https://raw.github.com/technomancy/leiningen/stable/bin/lein
+    chmod +x lein
+    lein self-install
+    git clone http://github.com/log0ymxm/gps-sim.git
+    cd gps-sim
+    lein repl
+
+At the repl
+
+    user> (go)
 
 ## Testing the verified program
 
