@@ -54,11 +54,6 @@ that you don't need an interleaving join."
      [(sin theta)     (cos theta)  0]
      [      0        0     1]]))
 
-;; TODO scaling matrix -- anywhere we do (R + h)
-;; TODO may not need
-(defn scaling-matrix [k shape]
-  (* k (apply identity-matrix shape)))
-
 ;; TODO may not need
 (defn spherical->cartesian-jacobian [rho theta phi]
   [[(* (sin theta) (cos phi))    (* rho (cos theta) (cos phi)) (- (* rho (sin theta) (sin phi)))]
