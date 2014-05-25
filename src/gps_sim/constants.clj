@@ -2,12 +2,11 @@
   (:require [schema.core :as s]
             [gps-sim.utils.schemas :refer [Constants DataFile]]))
 
-;; Sensible defaults
-(def pi (atom Math/PI))
-(def tau (atom (* 2 @pi)))
-(def c (atom 299792458M))
-(def R (atom 6367444.5M))
-(def s (atom 86164.09M))
+(def ^:dynamic pi (atom Math/PI))
+(def ^:dynamic tau (atom (* 2 @pi)))
+(def ^:dynamic c (atom 299792458M))
+(def ^:dynamic R (atom 6367444.5M))
+(def ^:dynamic s (atom 86164.09M))
 
 (s/defn set-constants! [constants :- Constants]
   (reset! pi (:pi constants))

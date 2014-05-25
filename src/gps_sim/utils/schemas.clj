@@ -61,7 +61,8 @@
                     (s/one BigDecimal "lambda")
                     (s/one (BoundedReal -10000 10000000) "height")])
 
-(def Satellite [(s/one BigDecimal "u_1")
+(def Satellite [(s/one s/Num "index")
+                (s/one BigDecimal "u_1")
                 (s/one BigDecimal "u_2")
                 (s/one BigDecimal "u_3")
                 (s/one BigDecimal "v_1")
@@ -98,5 +99,6 @@
 (def parse-data (coerce/coercer DataFile data-coercion-matcher))
 (def parse-dms-list (coerce/coercer DMSCoordinateList data-coercion-matcher))
 (def parse-cartesian-list (coerce/coercer CartesianCoordinateList data-coercion-matcher))
+(def parse-cartesian-satellite-list (coerce/coercer CartesianSatelliteList data-coercion-matcher))
 (def parse-satellite-list (coerce/coercer SatelliteList data-coercion-matcher))
 (def parse-rad-list (coerce/coercer RadCoordinateList data-coercion-matcher))

@@ -3,7 +3,8 @@
   not be included in a production build of the application."
   (:use midje.repl
         clojure.core.matrix)
-  (:require [clojure.java.io :as io]
+  (:require [clojure.core.matrix.operators :refer [**]]
+            [clojure.java.io :as io]
             [clojure.java.javadoc :refer (javadoc)]
             [clojure.pprint :refer (pprint)]
             [clojure.reflect :refer (reflect)]
@@ -15,7 +16,9 @@
             [gps-sim.constants :refer [pi tau R c s]]
             [gps-sim.satellite :as s]
             [gps-sim.vehicle :as v]
-            [gps-sim.receiver :as r]))
+            [gps-sim.receiver :as r]
+            [gps-sim.utils.io :as gps-io]
+            [gps-sim.utils.schemas :as schemas]))
 
 (def system
   "A Var containing an object representing the application under
