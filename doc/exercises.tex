@@ -215,7 +215,7 @@ Since the horizon line is going to be the orthogonal vector of a vehicle $\mathb
 \begin{polynomial}
 \begin{aligned}
 \mathbf{x}_s(t) &= (R + h) [ \mathbf{u} cos(\frac{2 \pi t}{p} + \theta) + \mathbf{v} sin(\frac{2 \pi t}{p} + \theta)] \\
-F(t_s) &= t_V - \frac{|| x_s(t_s) - x_v}{c} - t_s = 0 \\
+F(t_s) &= t_V - \frac{|| x_s(t_s) - x_v ||}{c} - t_s = 0 \\
 t_s &= t_V - \frac{|| x_s(t_s) - x_v||}{c}
 \end{aligned}
 \end{polynomial}
@@ -242,8 +242,8 @@ t_V = t_s + \frac{|| x_s(t_s) - x_v||}{c}
 % TODO
 \blue{
 \begin{polynomial}
-Ax=b
-x = A^{-1}b
+Ax=b \\
+x = A^{-1}b \\
 min(||Ax-b||^2)
 \end{polynomial}
 }
@@ -260,7 +260,7 @@ F_m(x_V)
 f &= F^\intercal F \\
 &= F_1^2 + F_2^2 + \cdots + F_m^2 \\
 &= || F ||^2 \\
-F_m(x_V) &= ||x_V - X_{s_1}|| - ||x_V - x_{s_{m+1}} || - c (t_{s_{m+1}} - t_{s_1}) = 0
+F_m(x_V) &= ||x_V - X_{s_1}|| - ||x_V - x_{s_{m+1}} || + c (t_{s_{m+1}} - t_{s_1}) = 0
 \end{aligned}
 \end{polynomial}
 }
@@ -269,7 +269,12 @@ F_m(x_V) &= ||x_V - X_{s_1}|| - ||x_V - x_{s_{m+1}} || - c (t_{s_{m+1}} - t_{s_1
 
 % TODO don't think I've thought of this one yet
 \blue{
-TODO
+\begin{polynomial}
+\begin{aligned}
+\mathbf{x}_s(t) &= R \left[ \mathbf{u} cos(\frac{2 \pi t}{p} + \theta) + \mathbf{v} sin(\frac{2 \pi t}{p} + \theta) \right] \\
+\end{aligned}
+\end{polynomial}
+If the orbital period of a satellite is half that of a sidereal day, it means it orbits twice for each single rotation of the earth. So this means that the satellite creates 
 }
 
 \item[Exercise 13.] Find a precise description of Newton's method as it is applied to the nonlinear system obtained by processing data from 4 satellites, as derived in an earlier exercise. Your answer should include an explicit specification of the derivatives involved.
@@ -283,17 +288,38 @@ TODO
 \end{aligned}
 \end{polynomial}
 }
+\blue{
+If $x = \left(\begin{matrix} x_1 \\ x_2 \\ \vdots \\ x_m \end{matrix}\right)$ \\
+$F(x_V) = \left(\begin{matrix} F_1 \\ F_2 \\ F_3 \end{matrix}\right) = \left(\begin{matrix}
+|| x_V - x_{s_1} || - || x_V - x_{s_2} || - c(t_{s_2} - t_{s_1}) \\
+|| x_V - x_{s_1} || - || x_V - x_{s_3} || - c(t_{s_3} - t_{s_1}) \\
+|| x_V - x_{s_1} || - || x_V - x_{s_4} || - c(t_{s_4} - t_{s_1})
+\end{matrix}\right)$ \\
+\begin{polynomial}
+\begin{aligned}
+\nabla F = \left(\begin{matrix} \nabla F_1 \\ \nabla F_2 \\ \nabla F_3 \end{matrix}\right) &=
+\left(\begin{matrix}
+\frac{\partial}{\partial x} F_1 & \frac{\partial}{\partial y} F_1 & \frac{\partial}{\partial z} F_1 \\
+\frac{\partial}{\partial x} F_2 & \frac{\partial}{\partial y} F_2 & \frac{\partial}{\partial z} F_2 \\
+\frac{\partial}{\partial x} F_3 & \frac{\partial}{\partial y} F_3 & \frac{\partial}{\partial z} F_3
+\end{matrix}\right) \\
+&= \left(\begin{matrix}
+\frac{x_V - x_{s_1}}{|| \mathbf{x}_V - \mathbf{x}_{s_1} ||} - \frac{x_v - x_{s_2}}{|| \mathbf{x}_V - \mathbf{x}_{s_2} ||}
+\end{matrix}\right)
+\end{aligned}
+\end{polynomial}
+}
 
 \item[Exercise 14.] Similarly, find Newton's method for the nonlinear system obtained from the least squares approach. Again, your answer should include an explicit specification of the derivatives involved.
 
-% TODO
+% TODO in notes
 \blue{
 TODO
 }
 
 \item[Exercise 15.] Think about the number of solutions obtained by analyzing four satellite signals with an unknown vehicle time $t_V$. This is an open ended question that will not be graded!
 
-% TODO
+% TODO in notes
 \blue{
 TODO
 }
@@ -303,6 +329,8 @@ TODO
 \blue{
 TODO
 }
+
+
 
 
 \item[Exercise 17.] After venting her frustration about the federal deficit Meg went to task with \textit{me}. She said that ``you academic types'' like to be so cumbersome. She thinks we don't use ``common sense'' because the very phrase isn't rooted in Latin or Greek. Why, she says, do I have to have integers \textbf{NS} and \textbf{EW} to indicate which hemisphere I'm on? Why, she says, don't I just make the degrees positive or negative? Indeed, why not?
