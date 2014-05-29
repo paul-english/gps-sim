@@ -12,21 +12,24 @@
                                            parse-cartesian-list]]
             [gps-sim.utils.matrix :refer [join-1 join-1-interleave]]))
 
-(s/defn dms->radians :- RadCoordinateList
-  [A :- DMSCoordinateList]
-  (let [times (mmul A (transpose [[1 0 0 0 0 0 0 0 0 0]]))
-        orientations (mmul A (transpose [[0 0 0 0 1 0 0 0 0 0]
-                                         [0 0 0 0 0 0 0 0 1 0]]))
-        degrees (with-precision 20
-                  (mmul A (transpose [[0 1 1/60 1/3600 0 0 0 0 0 0]
-                                      [0 0 0 0 0 1 1/60 1/3600 0 0]])))
-        heights (mmul A (transpose [[0 0 0 0 0 0 0 0 0 1]]))
-
-        radians (* degrees orientations (repeat (first (shape A))
-                                                (with-precision 20
-                                                  [(/ @pi 180) (/ @pi 180)])))]
-    (parse-rad-list
-     (join-1 times radians heights))))
+    (s/defn dms->radians :- RadCoordinateList
+      [A :- DMSCoordinateList]
+      (with-precision 20
+        (let [->rad (/ @pi 180)
+              deg->rad (* 1 ->rad)
+              m->rad (* 1/60 ->rad)
+              s->rad (* 1/3600 ->rad)
+              times (mmul A (transpose [[1 0 0 0 0 0 0 0 0 0]]))
+              orientations (mmul A (transpose [[0 0 0 0 1 0 0 0 0 0]
+                                               [0 0 0 0 0 0 0 0 1 0]]))
+              radians (->> [[0 deg->rad m->rad s->rad 0 0 0 0 0 0]
+                            [0 0 0 0 0 deg->rad m->rad s->rad 0 0]]
+                           transpose
+                           (mmul A)
+                           (* orientations))
+              heights (mmul A (transpose [[0 0 0 0 0 0 0 0 0 1]]))]
+          (parse-rad-list
+           (join-1 times radians heights)))))
 
 (s/defn radians->dms :- DMSCoordinateList
   [A :- RadCoordinateList]
