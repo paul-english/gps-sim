@@ -34,8 +34,15 @@
 }}
 
 
-\title{Exercises}
-\author{Paul English}
+\newcommand{\vect}[1]{\vec{\lowercase{#1}}}
+
+\title{Homework \#1}
+\author{
+Haylee Crane \\
+Paul English \\
+Sean Melessa \\
+Sarath Thekkedath
+}
 %\date{}							% Activate to display a given date or no date
 
 \begin{document}
@@ -84,47 +91,59 @@ where $s$ is the period of a sidereal day, $\mathbf{u}$ is the latitude of our c
                gobble=2,
                frame=lines,
                framesep=2mm]{clojure}
-  (s/defn dms->radians :- RadCoordinateList
-    [A :- DMSCoordinateList]
-    (let [times (mmul A (transpose [[1 0 0 0 0 0 0 0 0 0]]))
-          orientations (mmul A (transpose [[0 0 0 0 1 0 0 0 0 0]
-                                           [0 0 0 0 0 0 0 0 1 0]]))
-          ;; TODO we should be able combine orientations & $\pi$/180 into this transform
-          degrees (with-precision 20
-                    (mmul A (transpose [[0 1 1/60 1/3600 0 0 0 0 0 0]
-                                        [0 0 0 0 0 1 1/60 1/3600 0 0]])))
-          heights (mmul A (transpose [[0 0 0 0 0 0 0 0 0 1]]))
-          radians (* degrees orientations (repeat (first (shape A))
-                                                  [(/ pi 180) (/ pi 180)]))]
-      (parse-rad-list
-       (join-1 times radians heights))))
+  
+    (s/defn dms->radians :- RadCoordinateList
+      [A :- DMSCoordinateList]
+      (with-precision 20
+        (let [->rad (/ @pi 180)
+              deg->rad (* 1 ->rad)
+              m->rad (* 1/60 ->rad)
+              s->rad (* 1/3600 ->rad)
+              times (mmul A (transpose [[1 0 0 0 0 0 0 0 0 0]]))
+              orientations (mmul A (transpose [[0 0 0 0 1 0 0 0 0 0]
+                                               [0 0 0 0 0 0 0 0 1 0]]))
+              heights (mmul A (transpose [[0 0 0 0 0 0 0 0 0 1]]))
+              radians (->> [[0 deg->rad m->rad s->rad 0 0 0 0 0 0]
+                            [0 0 0 0 0 deg->rad m->rad s->rad 0 0]]
+                           transpose
+                           (mmul A)
+                           (* orientations))
+              ]
+          (parse-rad-list
+           (join-1 times radians heights)))))
 
-  (s/defn radians->dms :- DMSCoordinateList
-    [A :- RadCoordinateList]
-    (let [times (mmul A (transpose [[1 0 0 0]]))
-          heights (mmul A (transpose [[0 0 0 1]]))
-          degrees-decimal (mmul A (transpose [[0 (/ 180 pi) 0 0]
-                                              [0 0 (/ 180 pi) 0]]))
-          orientations (emap #(if (pos? %) 1 -1) degrees-decimal)
-          positive-degrees (emap abs degrees-decimal)
-          degrees (emap #(Math/floor %) positive-degrees)
-          minutes-decimal (* 60 (- positive-degrees degrees))
-          minutes (emap #(Math/floor %) minutes-decimal)
-          seconds (* 60 (- minutes-decimal minutes))]
-      (parse-dms-list
-       (join-1 times
-               (join-1-interleave degrees minutes seconds orientations)
-               heights))))
+    (s/defn radians->dms :- DMSCoordinateList
+      [A :- RadCoordinateList]
+      (let [times (mmul A (transpose [[1 0 0 0]]))
+            heights (mmul A (transpose [[0 0 0 1]]))
+            degrees-decimal (->> [[0 (/ 180 @pi) 0 0]
+                                  [0 0 (/ 180 @pi) 0]]
+                                 (with-precision 20)
+                                 transpose
+                                 (mmul A))
+            orientations (emap #(if (pos? \%) 1 -1) degrees-decimal)
+            positive-degrees (emap abs degrees-decimal)
+            degrees (emap #(Math/floor \%) positive-degrees)
+            minutes-decimal (* 60 (- positive-degrees degrees))
+            minutes (emap #(Math/floor \%) minutes-decimal)
+            seconds (* 60 (- minutes-decimal minutes))]
+        (parse-dms-list
+         (join-1 times
+                 (join-1-interleave degrees minutes seconds orientations)
+                 heights))))
 \end{minted}
 
-Full source here: \url{https://github.com/log0ymxm/gps-sim/blob/master/src/gps_sim/utils/angles.clj}
+\blue{
+\textbf{Explanation:} On line 1 and 2 we define a function that converts a degrees, minutes, seconds representation to radians. It outputs a list of the form $t \psi \lambda h$ defined as a $RadCoordinateList$, and accepts one value $A$ a matrix consisting of coordinates in the form given at (8). In line 3 we ensure our function uses $BigDecimal$ precision of 20 places. Lines 4-7 calculate the scalar values that are needed to convert to radians. Then in lines 8-11 we separate $t$, $NS/EW$ orientations, and $h$ using matrix operations. Finally starting on line 12 we use a matrix operation with the radian constants and our orientations to perform the actual $dms\to radians$ computation (The $->>$ operator means thread an argument through the last parameter, it just shortens the code). Lastly on lines 18 and 19 we join $t$ and $h$ onto our calculated radians on dimension 1, and ensure that all numbers are parsed to match our output schema.}
 
-Test cases available here: \url{https://github.com/log0ymxm/gps-sim/blob/master/test/gps_sim/utils/angles_test.clj}
+\blue{Full source here: \url{https://github.com/log0ymxm/gps-sim/blob/master/src/gps_sim/utils/angles.clj}}
+
+\blue{Test cases available here: \url{https://github.com/log0ymxm/gps-sim/blob/master/test/gps_sim/utils/angles_test.clj}}
 
 \item[Exercise 3.] Find a formula that converts position as given in (8) at time $t = 0$ into cartesian coordinates.
 
 \blue{
-In (8) we have access to latitude $\psi$ and longitude $\lambda$. We can calculate the cartesian coordinates by transforming from spherical coordinates as follows,
+With the data schema presented by (8) we have access to latitude $\psi$ and longitude $\lambda$. Assuming we've already converted these to radians, we can calculate the cartesian coordinates by transforming from spherical coordinates as follows. Note traditionally with spherical coordinates we measure $\phi$ as the angle coming off the $z$-axis, with latitude $\psi$ we measure the angle coming from the equator or $xy$-plane, thus $\psi = \pi/2 - \phi$, and we use $cos$ in calculating $x,y$ and $sin$ to calculate $z$.
 \begin{polynomial}
 \begin{aligned}
 x &= \rho \, cos(\psi) cos(\lambda) \\ 
@@ -134,9 +153,7 @@ z &= \rho \, sin(\psi)
 \end{polynomial}
 }
 
-\blue{
-Where $\rho = (R + h)$, $\phi$ is the radian representation of our latitude $\psi$, and $\theta$ is the radian representation of our longitude $\lambda$.
-}
+\blue{where $\rho = (R + h)$.}
 
 \item[Exercise 4.] Find a formula that converts position and general time $t$ as given in (8) into cartesian coordinates.
 
@@ -166,9 +183,6 @@ z &= \rho \, sin(\psi)
 
 \item[Exercise 6.] Find a formula that converts general time $t$ and a position given in cartesian coordinates into a position of the form (8).
 
-% TODO time is a component of I think theta, so it will probably be related to that
-% http://stackoverflow.com/questions/5278417/rotating-body-from-spherical-coordinates
-
 \blue{
 \begin{polynomial}
 \begin{aligned}
@@ -194,29 +208,28 @@ z &= \rho \, sin(\psi)
 \end{polynomial}
 }
 
-\item[Exercise 8.] Given a point $\mathbf{x}$ on earth and a point $\mathbf{s}$ in space, both in cartesian coordinates, find a condition that tells you whether $\mathbf{s}$ as viewed from $\mathbf{x}$ is above the horizon.
+\item[Exercise 8.] Given a point $\vect{x}$ on earth and a point $\vect{s}$ in space, both in cartesian coordinates, find a condition that tells you whether $\vect{s}$ as viewed from $\vect{x}$ is above the horizon.
 
-% TODO need this in my program
-Since the horizon line is going to be the orthogonal vector of a vehicle $\mathbf{v}$, we can project a satellite $\mathbf{s}$ onto our vehicle and determine where it's oriented around our vehicle.
+Since the horizon line is going to be the orthogonal vector of a vehicle $\vect{v}$, we can project a satellite $\vect{s}$ onto our vehicle and determine where it's oriented around our vehicle.
 
 \blue{
 \begin{polynomial}
 \begin{aligned}
-\frac{\mathbf{v} \cdot \mathbf{s}}{||\mathbf{v}||} &\ge ||\mathbf{v}|| \\
-\mathbf{v} \cdot \mathbf{s} &\ge ||\mathbf{v}||^2
+\frac{\vect{v} \cdot \vect{s}}{||\vect{v}||} &\ge ||\vect{v}|| \\
+\vect{v} \cdot \vect{s} &\ge ||\vect{v}||^2
 \end{aligned}
 \end{polynomial}
 }
 
-\item[Exercise 9.] Discuss how to compute $t_S$ and $\mathbf{x}_S$.
+\item[Exercise 9.] Discuss how to compute $t_S$ and $\vect{x}_S$.
 
 % TODO clarify
 \blue{
 \begin{polynomial}
 \begin{aligned}
-\mathbf{x}_s(t) &= (R + h) [ \mathbf{u} cos(\frac{2 \pi t}{p} + \theta) + \mathbf{v} sin(\frac{2 \pi t}{p} + \theta)] \\
-F(t_s) &= t_V - \frac{|| x_s(t_s) - x_v ||}{c} - t_s = 0 \\
-t_s &= t_V - \frac{|| x_s(t_s) - x_v||}{c}
+\vect{x}_s(t) &= (R + h) [ \vect{u} cos(\frac{2 \pi t}{p} + \theta) + \vect{v} sin(\frac{2 \pi t}{p} + \theta)] \\
+F(t_s) &= t_V - \frac{|| \vect{x}_s(t_s) - \vect{x}_v ||}{c} - t_s = 0 \\
+t_s &= t_V - \frac{|| \vect{x}_s(t_s) - \vect{x}_v||}{c}
 \end{aligned}
 \end{polynomial}
 }
@@ -225,42 +238,42 @@ t_s &= t_V - \frac{|| x_s(t_s) - x_v||}{c}
 
 \item[Exercise 10.] Suppose you have data of the form from (11) from 4 satellites. Write down a set of four equations whose solutions are the position of the vehicle in cartesian coordinates, and $t_V$
 
-% TODO need another equation
 \blue{
 \begin{polynomial}
 \begin{aligned}
-|| x_V - x_{s_1} || - || x_V - x_{s_2} || + c(t_{s_2} - t_{s_1}) = 0 \\
-|| x_V - x_{s_1} || - || x_V - x_{s_3} || + c(t_{s_3} - t_{s_1}) = 0 \\
-|| x_V - x_{s_1} || - || x_V - x_{s_4} || + c(t_{s_4} - t_{s_1}) = 0 \\
-t_V = t_s + \frac{|| x_s(t_s) - x_v||}{c}
+|| \vect{x}_V - \vect{x}_{s_1} || - || \vect{x}_V - \vect{x}_{s_2} || + c(t_{s_2} - t_{s_1}) = 0 \\
+|| \vect{x}_V - \vect{x}_{s_1} || - || \vect{x}_V - \vect{x}_{s_3} || + c(t_{s_3} - t_{s_1}) = 0 \\
+|| \vect{x}_V - \vect{x}_{s_1} || - || \vect{x}_V - \vect{x}_{s_4} || + c(t_{s_4} - t_{s_1}) = 0 \\
+t_V = t_s + \frac{|| \vect{x}_s(t_s) - \vect{x}_v||}{c}
 \end{aligned}
 \end{polynomial}
 }
+\blue{TODO I don't think we need 4 equations to come up with the position of the vehicle. Here our 4th one doesn't belong.}
 
 \item[Exercise 11.] Suppose you have data of the form (11) from more than 4 satellites. Write down a least squares problem whose solution the position of the vehicle in cartesian coordinates, and $t_V$.
 
 % TODO
 \blue{
 \begin{polynomial}
-Ax=b \\
-x = A^{-1}b \\
-min(||Ax-b||^2)
+Ax=\vect{b} \\
+x = A^{-1}\vect{b} \\
+min(||Ax-\vect{b}||^2)
 \end{polynomial}
 }
 
 \blue{
 \begin{polynomial}
 \begin{aligned}
-F(x_V) &= \left(\begin{matrix}
-F_1(x_V) \\
-F_2(x_V) \\
+F(\vect{x}_V) &= \left(\begin{matrix}
+F_1(\vect{x}_V) \\
+F_2(\vect{x}_V) \\
 \vdots \\
-F_m(x_V)
+F_m(\vect{x}_V)
 \end{matrix}\right) \\
 f &= F^\intercal F \\
 &= F_1^2 + F_2^2 + \cdots + F_m^2 \\
 &= || F ||^2 \\
-F_m(x_V) &= ||x_V - X_{s_1}|| - ||x_V - x_{s_{m+1}} || + c (t_{s_{m+1}} - t_{s_1}) = 0
+F_m(x_V) &= ||\vect{x}_V - \vect{x}_{s_1}|| - ||\vect{x}_V - \vect{x}_{s_{m+1}} || + c (t_{s_{m+1}} - t_{s_1}) = 0
 \end{aligned}
 \end{polynomial}
 }
@@ -271,7 +284,7 @@ F_m(x_V) &= ||x_V - X_{s_1}|| - ||x_V - x_{s_{m+1}} || + c (t_{s_{m+1}} - t_{s_1
 \blue{
 \begin{polynomial}
 \begin{aligned}
-\mathbf{x}_s(t) &= R \left[ \mathbf{u} cos(\frac{2 \pi t}{p} + \theta) + \mathbf{v} sin(\frac{2 \pi t}{p} + \theta) \right] \\
+\vect{x}_s(t) &= R \left[ \vect{u} cos(\frac{2 \pi t}{p} + \theta) + \vect{v} sin(\frac{2 \pi t}{p} + \theta) \right] \\
 \end{aligned}
 \end{polynomial}
 If the orbital period of a satellite is half that of a sidereal day, it means it orbits twice for each single rotation of the earth. So this means that the satellite creates 
@@ -283,8 +296,8 @@ If the orbital period of a satellite is half that of a sidereal day, it means it
 \blue{
 \begin{polynomial}
 \begin{aligned}
-\mathbf{x}_s(t) &= (R + h) [ \mathbf{u} cos(\frac{2 \pi t}{p} + \theta) + \mathbf{v} sin(\frac{2 \pi t}{p} + \theta)] \\
-\mathbf{x}_s^\prime(t) &= (R + h) \left[ \frac{2 \pi}{p} \left( -\mathbf{u} sin(\frac{2 \pi t}{p} + \theta) + \mathbf{v} cos(\frac{2 \pi t}{p} + \theta) \right) \right] \\
+\vect{x}_s(t) &= (R + h) [ \vect{u} cos(\frac{2 \pi t}{p} + \theta) + \vect{v} sin(\frac{2 \pi t}{p} + \theta)] \\
+\vect{x}_s^\prime(t) &= (R + h) \left[ \frac{2 \pi}{p} \left( -\vect{u} sin(\frac{2 \pi t}{p} + \theta) + \vect{v} cos(\frac{2 \pi t}{p} + \theta) \right) \right] \\
 \end{aligned}
 \end{polynomial}
 }
@@ -304,7 +317,15 @@ $F(x_V) = \left(\begin{matrix} F_1 \\ F_2 \\ F_3 \end{matrix}\right) = \left(\be
 \frac{\partial}{\partial x} F_3 & \frac{\partial}{\partial y} F_3 & \frac{\partial}{\partial z} F_3
 \end{matrix}\right) \\
 &= \left(\begin{matrix}
-\frac{x_V - x_{s_1}}{|| \mathbf{x}_V - \mathbf{x}_{s_1} ||} - \frac{x_v - x_{s_2}}{|| \mathbf{x}_V - \mathbf{x}_{s_2} ||}
+\frac{x_v - x_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{x_v - x_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} &
+\frac{y_v - y_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{y_v - y_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} &
+\frac{z_v - z_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{z_v - z_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} \\
+\frac{x_v - x_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{x_v - x_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} &
+\frac{y_v - y_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{y_v - y_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} &
+\frac{z_v - z_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{z_v - z_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} \\
+\frac{x_v - x_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{x_v - x_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} &
+\frac{y_v - y_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{y_v - y_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} &
+\frac{z_v - z_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{z_v - z_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||}
 \end{matrix}\right)
 \end{aligned}
 \end{polynomial}
