@@ -305,7 +305,6 @@ If the orbital period of a satellite is half that of a sidereal day, it means it
 
 \item[Exercise 13.] Find a precise description of Newton's method as it is applied to the nonlinear system obtained by processing data from 4 satellites, as derived in an earlier exercise. Your answer should include an explicit specification of the derivatives involved.
 
-% TODO
 \blue{
 \begin{polynomial}
 \begin{aligned}
@@ -315,56 +314,134 @@ If the orbital period of a satellite is half that of a sidereal day, it means it
 \end{polynomial}
 }
 \blue{
-If $x = \left(\begin{matrix} x_1 \\ x_2 \\ \vdots \\ x_m \end{matrix}\right)$ \\
+If $\vect{x}_V = \left(\begin{matrix} x_V \\ y_V \\ z_V \end{matrix}\right)$ 
+and $\vect{x}_{s_j} = \left(\begin{matrix} x_{s_j}\\ y_{s_j} \\ z_{s_j} \end{matrix}\right)$ 
+for $j = 1,2,3$,\\
 $F(x_V) = \left(\begin{matrix} F_1 \\ F_2 \\ F_3 \end{matrix}\right) = \left(\begin{matrix}
-|| x_V - x_{s_1} || - || x_V - x_{s_2} || - c(t_{s_2} - t_{s_1}) \\
-|| x_V - x_{s_1} || - || x_V - x_{s_3} || - c(t_{s_3} - t_{s_1}) \\
-|| x_V - x_{s_1} || - || x_V - x_{s_4} || - c(t_{s_4} - t_{s_1})
-\end{matrix}\right)$ \\
+|| \vect{x}_V - \vect{x}_{s_1} || - || \vect{x}_V - \vect{x}_{s_2} || - c(t_{s_2} - t_{s_1}) \\
+|| \vect{x}_V - \vect{x}_{s_1} || - || \vect{x}_V - \vect{x}_{s_3} || - c(t_{s_3} - t_{s_1}) \\
+|| \vect{x}_V - \vect{x}_{s_1} || - || \vect{x}_V - \vect{x}_{s_4} || - c(t_{s_4} - t_{s_1})
+\end{matrix}\right) \rightarrow$ \\
 \begin{polynomial}
 \begin{aligned}
 \nabla F = \left(\begin{matrix} \nabla F_1 \\ \nabla F_2 \\ \nabla F_3 \end{matrix}\right) &=
 \left(\begin{matrix}
-\frac{\partial}{\partial x} F_1 & \frac{\partial}{\partial y} F_1 & \frac{\partial}{\partial z} F_1 \\
-\frac{\partial}{\partial x} F_2 & \frac{\partial}{\partial y} F_2 & \frac{\partial}{\partial z} F_2 \\
-\frac{\partial}{\partial x} F_3 & \frac{\partial}{\partial y} F_3 & \frac{\partial}{\partial z} F_3
-\end{matrix}\right) \\
+\frac{\partial}{\partial x_V} F_1 & \frac{\partial}{\partial y_V} F_1 & \frac{\partial}{\partial z_V} F_1 \\
+\frac{\partial}{\partial x_V} F_2 & \frac{\partial}{\partial y_V} F_2 & \frac{\partial}{\partial z_V} F_2 \\
+\frac{\partial}{\partial x_V} F_3 & \frac{\partial}{\partial y_V} F_3 & \frac{\partial}{\partial z_V} F_3
+\end{matrix}
+\right) \\
 &= \left(\begin{matrix}
-\frac{x_v - x_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{x_v - x_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} &
-\frac{y_v - y_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{y_v - y_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} &
-\frac{z_v - z_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{z_v - z_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} \\
-\frac{x_v - x_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{x_v - x_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} &
-\frac{y_v - y_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{y_v - y_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} &
-\frac{z_v - z_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{z_v - z_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} \\
-\frac{x_v - x_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{x_v - x_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} &
-\frac{y_v - y_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{y_v - y_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||} &
-\frac{z_v - z_{s_1}}{|| \vect{x}_v - \vect{x}_{s_1} ||} - \frac{z_v - z_{s_2}}{|| \vect{x}_v - \vect{x}_{s_2} ||}
-\end{matrix}\right)
+\frac{x_V - x_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{x_V - x_{s_2}}{|| \vect{x}_V - \vect{x}_{s_2} ||} &
+\frac{y_V - y_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{y_V - y_{s_2}}{|| \vect{x}_V - \vect{x}_{s_2} ||} &
+\frac{z_V - z_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{z_V - z_{s_2}}{|| \vect{x}_V - \vect{x}_{s_2} ||} \\
+\frac{x_V - x_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{x_V - x_{s_3}}{|| \vect{x}_V - \vect{x}_{s_3} ||} &
+\frac{y_V - y_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{y_V - y_{s_3}}{|| \vect{x}_V - \vect{x}_{s_3} ||} &
+\frac{z_V - z_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{z_V - z_{s_3}}{|| \vect{x}_V - \vect{x}_{s_3} ||} \\
+\frac{x_V - x_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{x_V - x_{s_4}}{|| \vect{x}_V - \vect{x}_{s_4} ||} &
+\frac{y_V - y_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{y_V - y_{s_4}}{|| \vect{x}_V - \vect{x}_{s_4} ||} &
+\frac{z_V - z_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{z_V - z_{s_4}}{|| \vect{x}_V - \vect{x}_{s_4} ||}
+\end{matrix}\right).
+\end{aligned}
+\end{polynomial}
+}
+\blue{
+\begin{polynomial}
+\begin{aligned}
+\text{Solve } \left\{
+\begin{matrix}
+\nabla F_{x_V} &= x_V^{(k)} S^{(k)} = -F(x_V^{(k)}),\\
+x_V^{(k+1)} &= x_V^{(k)} + S^{(k)}.
+\end{matrix}
+\right.
 \end{aligned}
 \end{polynomial}
 }
 
 \item[Exercise 14.] Similarly, find Newton's method for the nonlinear system obtained from the least squares approach. Again, your answer should include an explicit specification of the derivatives involved.
 
-% TODO in notes
 \blue{
-TODO
+If $\vect{x}_V = \left(\begin{matrix} x_V \\ y_V \\ z_V \end{matrix}\right)$ and $\vect{x}_{s_j} = \left(\begin{matrix} x_{s_j}\\ y_{s_j} \\ z_{s_j} \end{matrix}\right)$ for $j = 1,2,\hdots,m$, \\
+$F(x_V) = \left(\begin{matrix} F_1 \\ F_2 \\ \vdots \\ F_{m-1} \end{matrix}\right) = \left(\begin{matrix}
+|| \vect{x}_V - \vect{x}_{s_1} || - || \vect{x}_V - \vect{x}_{s_2} || - c(t_{s_2} - t_{s_1}) \\
+|| \vect{x}_V - \vect{x}_{s_1} || - || \vect{x}_V - \vect{x}_{s_3} || - c(t_{s_3} - t_{s_1}) \\
+\vdots \\
+|| \vect{x}_V - \vect{x}_{s_1} || - || \vect{x}_V - \vect{x}_{s_m} || - c(t_{s_m} - t_{s_1})
+\end{matrix}\right) \rightarrow$ \\
+\begin{polynomial}
+\begin{aligned}
+\nabla F = \left(\begin{matrix} \nabla F_1 \\ \nabla F_2 \\ \vdots \\ \nabla F_{m-1} \end{matrix}\right) &=
+\left(\begin{matrix}
+\frac{\partial}{\partial x_V} F_1 & \frac{\partial}{\partial y_V} F_1 & \frac{\partial}{\partial z_V} F_1 \\
+\frac{\partial}{\partial x_V} F_2 & \frac{\partial}{\partial y_V} F_2 & \frac{\partial}{\partial z_V} F_2 \\
+\vdots & \vdots & \vdots \\
+\frac{\partial}{\partial x_V} F_{m-1} & \frac{\partial}{\partial y_V} F_{m-1} & \frac{\partial}{\partial z_V} F_{m-1}
+\end{matrix}\right)
+\end{aligned}
+\end{polynomial}
+}
+\blue{
+\begin{polynomial}
+\begin{aligned}
+&= \left(\begin{matrix}
+\frac{x_V - x_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{x_V - x_{s_2}}{|| \vect{x}_V - \vect{x}_{s_2} ||} &
+\frac{y_V - y_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{y_V - y_{s_2}}{|| \vect{x}_V - \vect{x}_{s_2} ||} &
+\frac{z_V - z_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{z_V - z_{s_2}}{|| \vect{x}_V - \vect{x}_{s_2} ||} \\
+\frac{x_V - x_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{x_V - x_{s_3}}{|| \vect{x}_V - \vect{x}_{s_3} ||} &
+\frac{y_V - y_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{y_V - y_{s_3}}{|| \vect{x}_V - \vect{x}_{s_3} ||} &
+\frac{z_V - z_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{z_V - z_{s_3}}{|| \vect{x}_V - \vect{x}_{s_3} ||} \\
+\vdots & \vdots & \vdots \\
+\frac{x_V - x_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{x_V - x_{s_{m-1}}}{|| \vect{x}_V - \vect{x}_{s_{m-1}} ||} &
+\frac{y_V - y_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{y_V - y_{s_{m-1}}}{|| \vect{x}_V - \vect{x}_{s_{m-1}} ||} &
+\frac{z_V - z_{s_1}}{|| \vect{x}_V - \vect{x}_{s_1} ||} - \frac{z_V - z_{s_{m-1}}}{|| \vect{x}_V - \vect{x}_{s_{m-1}} ||}
+\end{matrix}\right).
+\end{aligned}
+\end{polynomial}
+Since $\nabla F |_{x_V=x_V^{(k)}} S^{(k)} = -F(x_V^{(k)})$ is overdetermined and might not have an exact solution, use nonlinear least squares to find an approximation,
+\begin{polynomial}
+\begin{aligned}
+G(S^{(k)}) &= \nabla F |_{x_V=x_V^{(k)}} S^{(k)} + F(x_V^{(k)}) = 0 \rightarrow \\
+g(S^{(k)}) &= G(S^{(k)})^TG(S^{(k)}).
+\end{aligned}
+\end{polynomial}
+We want to find $S^{(k,l)}$ such that the error $g(S^{(k,l)})$ is a minimum, so we use Newton's Method again on $\nabla g = 0$, where the gradient is taken with respect to the vector $S^{(k)},$
+\begin{polynomial}
+\begin{aligned}
+\text{Solve } \left\{
+    \begin{array}{lr}
+	(\nabla^2 g) S'^{(l)} = -\nabla g|_{S^{(k)} = S^{(k,l)}},\\
+	S^{(k,l+1)} = S^{(k,l)} + S'^{(l)}.
+     \end{array}
+   \right.
+\end{aligned}
+\end{polynomial}
+}
+\blue{
+$\nabla g = \nabla\left(\sum\limits_{j=1}^{m-1} || \nabla F_j|_{x_V=x_V^{(k)}} \cdot S^{(k)} + F_j(x_V^{(k)}) ||^2 \right)$.\\
+Since $\nabla^2 g = \nabla^2 G \cdot G + \nabla G^T\nabla G \approx \nabla G^T\nabla G$, and $\nabla G = \nabla F|_{x_V=x_V^{(k)}}$,\\
+$\nabla^2 g \approx F|_{x_V=x_V^{(k)}}^T F|_{x_V=x_V^{(k)}} \rightarrow\\$
+$\nabla^2 g \approx \left( \sum\limits_{j=1}^{m-1} \frac{\partial F_j}{\partial x_{V_u}}|_{x_{V_u}=x_{V_u}^{(k)}} \frac{\partial F_j}{\partial x_{V_v}}|_{x_{V_v}=x_{V_v}^{(k)}} \right)_{u,v=1,2,3}$\\
+where $(x_{V_1},x_{V_2},x_{V_3})=(x_{V},y_{V},z_{V})$ and $(x_{V_1}^{(k)},x_{V_2}^{(k)},x_{V_3}^{(k)})=(x_{V}^{(k)},y_{V}^{(k)},z_{V}^{(k)})$.\\
+Finally, plug the approximate of the Newton's Step, $S^{(k)} \approx S^{(k,l)}$, into $x^{(k+1)} = x^{(k)} + S^{(k)}$ to update Newton's Method.
 }
 
 \item[Exercise 15.] Think about the number of solutions obtained by analyzing four satellite signals with an unknown vehicle time $t_V$. This is an open ended question that will not be graded!
 
-% TODO in notes
 \blue{With 4 satellite signals we end up with 2 solutions after triangulation. Luckily we can eliminate one of the solutions as it usually won't make sense in the context. It may be a point out in space or within the earth.
 }
 
 \item[Exercise 16.] I gave an early draft of this assignment to my friend Meg Ikkal Anna Liszt. After muttering about the federal deficit she said that she has been talking to the Air Force (who operate GPS) for years. She does not understand why they are being so hard on themselves. She could save them billions of dollars because to determine position and altitude you only need three satellites, not four! Three satellites would give you three components of position, once you know position you can compute true run time to the satellite, and from that you can compute the current time. She thinks that the Air Force is not implementing this approach because they don't want to pay her fee of 10\% of the savings in launch costs of satellites alone. What do you think of this?
 
-\blue{With 4 satellites we still have 4 unknowns, each element of $\vect{x}_V$ and $t_V$. By setting up our system of equations from answer 10 we briefly eliminate the need to solve for $t_V$ and can solve for $\vect{x}_V$. After which, we can solve for $t_V$. If we only had 3 satellites as Meg suggests we wouldn't be able to eliminate $t_V$, and our system would be more difficult to solve accurately.}
+\blue{
+The possible position of the vehicle as measured by a single satellite is represented by a sphere around that satellite in three dimensions. With only three satellites as Meg suggests, the intersection of the three satellite's spheres is two distinct points. As in (15), it may be possible to cancel the wrong solution but it could prove to be problematic when real world uncertainties are introduced. With four satellites, however, this problem is no longer present since the fourth satellite will intersect the correct position or near the correct position when real world uncertainties are taken into account and yield a unique solution with relatively small uncertainties.
+}
 
 
 \item[Exercise 17.] After venting her frustration about the federal deficit Meg went to task with \textit{me}. She said that ``you academic types'' like to be so cumbersome. She thinks we don't use ``common sense'' because the very phrase isn't rooted in Latin or Greek. Why, she says, do I have to have integers \textbf{NS} and \textbf{EW} to indicate which hemisphere I'm on? Why, she says, don't I just make the degrees positive or negative? Indeed, why not?
 
-\blue{By keeping orientation (NS \& EW) outside of the degrees we account for potential uncertainty when latitude and/or longitude is $0$.}
+\blue{
+It fixes some problems when converting between coordinate systems. For example, when converting a point $(x,y)$ on the cartesian plane to the angle $\lambda$, the function $atan$ is used. However, $atan(\frac{y}{x}) = atan(\frac{-y}{-x})$ even though $(x,y)$ and $(-x,-y)$ are clearly different points. This error isn't fixed by any of the other variables that are transformed since none of them use $x$ and $y$ explicitly.
+}
 
 \end{enumerate}
 
