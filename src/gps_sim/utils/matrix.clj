@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [* - / + ==])
   (:use clojure.core.matrix
         clojure.core.matrix.operators)
-  (:require [schema.core :as s]
+  (:require [schema.macros :as sm]
             [gps-sim.constants :refer [tau]]
             [gps-sim.utils.numeric :refer [round-places num-decimals] :as num]))
 
@@ -17,7 +17,7 @@ interpolation that is being performed here.
 (lerp [[1] [5]] 1) => [[1] [2] [3] [4] [5]]"
   [A step]
   {:pre [(= 2 (row-count A))
-         (< step 1)
+         (<= step 1)
          (> step 0)]}
   (let [precision (num-decimals step)
         reciprocal (/ 1 step)
@@ -47,26 +47,20 @@ that you don't need an interleaving join."
   [& matrices]
   (apply mapv interleave matrices))
 
-(s/defn rotation-matrix [rotation :- BigDecimal]
-  (let [theta (* @tau rotation)]
-    ;;(println "--- rot-mat" theta)
-    [[(cos theta)  (- (sin theta)) 0]
-     [(sin theta)     (cos theta)  0]
-     [      0        0     1]]))
+(sm/defn rotation-matrix [theta :- BigDecimal]
+  [[(cos theta)  (- (sin theta)) 0]
+   [(sin theta)     (cos theta)  0]
+   [      0        0     1]])
 
-;; TODO may not need
-(defn spherical->cartesian-jacobian [rho theta phi]
-  [[(* (sin theta) (cos phi))    (* rho (cos theta) (cos phi)) (- (* rho (sin theta) (sin phi)))]
-   [(* (sin theta) (sin phi))    (* rho (cos theta) (sin phi))    (* rho (sin theta) (cos rho))]
-   [   (cos theta)          (- (* rho (sin theta)))                               0]])
-
-;; TODO may not need
-(defn cartesian->spherical-jacobian [x y z]
-  (let [rho (sqrt (+ (** x 2) (** y 2) (** z 2)))]
-    [[(/ x rho) (/ y rho) (/ z rho)]
-     [(/ (* x z) (* (** rho 2) (sqrt (+ (** x 2) (** y 2)))))
-      (/ (* y z) (* (** rho 2) (sqrt (+ (** x 2) (** y 2)))))
-      (- (/ (sqrt (+ (** x 2) (** y 2))) (** rho 2)))]
-     [(/ (- y) (+ (** x 2) (** y 2)))
-      (/ x (+ (** x 2) (** y 2)))
-      0]]))
+(defn norm
+  "A naive implementation of the vector 2-norm. An interface
+for the norm is currently in 0.24.1-SNAPSHOT under
+clojure.core.matrix.linear and it's probably best to use that
+once it's released."
+  ([v] (->> v
+          (map #(** % 2))
+          (apply +)
+          sqrt))
+  ([a b] (->> (map #(* %1 %2) a b)
+              (apply +)
+              sqrt)))

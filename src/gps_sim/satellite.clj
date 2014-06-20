@@ -1,8 +1,9 @@
 (ns gps-sim.satellite
+  (:gen-class)
   (:refer-clojure :exclude [* - + == /])
   (:use clojure.core.matrix
         clojure.core.matrix.operators)
-  (:require [schema.core :as s]
+  (:require [schema.macros :as sm]
             [schema.coerce :as coerce]
             [gps-sim.constants :refer [read-constants! R s c tau]]
             [gps-sim.utils.coordinates :refer [dms->radians rad->cartesian cartesian->rad]]
@@ -21,11 +22,14 @@
                                            parse-cartesian-list
                                            parse-cartesian-satellite-list]]))
 
-(s/defn rotate-coordinates :- CartesianCoordinateList
+(set! *warn-on-reflection* true)
+(set! *unchecked-math* true)
+
+(sm/defn rotate-coordinates :- CartesianCoordinateList
   [times :- [BigDecimal]
    coordinates :- CartesianCoordinateList]
   ;;(println "- rotate-coordinates" coordinates)
-  (let [theta (with-precision 20 (/ times @s))
+  (let [theta (with-precision 20 (/ (* @tau times) @s))
         ;;_ (println "    -> theta" theta)
         rotations (emap rotation-matrix theta)
         ;;_ (println "    -> rotations" rotations)
@@ -35,7 +39,7 @@
     ;;(println "    -> rotated" rotated)
     (parse-cartesian-list rotated)))
 
-(s/defn above-horizon? :- Boolean
+(sm/defn above-horizon? :- Boolean
   "To determine if a satellite is above the horizon,
 we can project the satellite vector onto the vehicle
 position vector. Then if the projection is greater
@@ -54,9 +58,10 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
   ;;(println "    -> v * v" (dot vehicle vehicle))
   ;;(println "    -> >" (> (dot (drop 2 satellite) vehicle) (dot vehicle vehicle)))
   (> (dot (drop 2 satellite) vehicle)
-     (dot vehicle vehicle)))
+     (/ (dot vehicle vehicle)
+        0.95)))
 
-(s/defn satellite-location :- CartesianCoordinateList
+(sm/defn satellite-location :- CartesianCoordinateList
   [satellites :- SatelliteList
    t :- [BigDecimal]]
   (println "- satellite-location")
@@ -92,7 +97,22 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
   (- (map #(dot vehicle-coordinates %) new-coordinates)
      (** pseudorange 2)))
 
+(defn fixed-point
+  "Repeatedly apply fun to data until (equal old-data new-data)
+   returns true.  If max iterations occur, it will throw an
+   exception.  Set max to nil for unlimited iterations."
+  [data fun max equal]
+  (let [step (fn step [data idx]
+               (when (and idx (= 0 idx))
+                 (throw (Exception. "Fixed point overflow")))
+               (let [new-data (fun data)]
+                 (if (equal data new-data)
+                   new-data
+                   (recur new-data (and idx (dec idx))))))]
+    (step data max)))
+
 ;; TODO test & schema
+;; TODO try using auto diff
 (defn gradient [{:keys [pseudorange satellites
                         satellite-times new-coordinates
                         vehicle-coordinates]}]
@@ -107,11 +127,13 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
         heights (get-column satellites 8)
         phases (get-column satellites 9)
         theta (with-precision 20 (+ (/ (* @tau satellite-times) periods)
-                                phases))
+                                    phases))
         location-gradient (with-precision 20 (* (/ @tau periods)
                                                 (+ @R heights)
                                                 (+ (* (- (transpose u)) (sin theta))
                                                    (* (transpose u) (cos theta)))))
+        ;; TODO new-coordinates is x_s(t)
+        ;;
         coordinate-diffs (- new-coordinates
                             (repeat (count satellites) vehicle-coordinates))
         out (* 2 (+ (* @c pseudorange)
@@ -127,6 +149,8 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
 
 ;; TODO test & schema
 ;; [t_s]
+;; TODO update interface for newtons method functions to make them
+;; easier to understand
 (defn newtons [{:keys [satellite-times] :as params}]
   (println "- newtons")
   (let [step (/ (satellite-time params) (gradient params))
@@ -139,8 +163,10 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
     out))
 
 (defn convergent? [{:keys [error steps max-steps tolerance] :as params}]
-  (or (< error tolerance)
-      (> steps max-steps)))
+  (or (every? #(< % tolerance) error)
+      (> steps max-steps))
+  #_(or (< error tolerance)
+        (> steps max-steps)))
 
 ;; TODO test & schema
 (defn next-guess [{:keys [steps satellite-coordinates
@@ -154,7 +180,15 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
         _ (println "    -> new-times" (first new-times))
         new-pseudorange (- vehicle-times new-times)
         _ (println "    -> new-pseudorange" (first new-pseudorange))
-        error (distance satellite-times new-times)]
+        error (map distance satellite-times new-times)
+        ;; TODO TODO TODO TODO this is the bug
+        ;; TODO I think that we're trying to calculate the error for
+        ;; the whole system at once, rather than individual steps for
+        ;; each satellite. This leads to an issue where none of the
+        ;; satellite measuerements converge close enough
+        _ (println "    -> *error*" error)
+        ;;error (distance satellite-times new-times)
+        ]
     (assoc params
       :satellite-times new-times
       :satellite-coordinates new-coordinates
@@ -168,7 +202,7 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
   (first (drop-while #(not (convergent? %))
                      (iterate #(next-guess %) start))))
 
-(s/defn run :- CartesianSatelliteList
+(sm/defn run :- CartesianSatelliteList
   [data :- DataFile
    input :- DMSCoordinateList]
   (read-constants! data)
@@ -212,7 +246,7 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
                                       :vehicle-coordinates vehicle
                                       :satellite-times satellite-times
                                       :tolerance (/ 0.01 @c)
-                                      :error 1
+                                      :error [1]
                                       :max-steps 10
                                       :steps 0})
                      _ (println "    -> solution" (keys solution))

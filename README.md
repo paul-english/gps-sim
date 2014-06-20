@@ -23,7 +23,7 @@ To build jars for submission
     lein self-install
     git clone http://github.com/log0ymxm/gps-sim.git
     cd gps-sim
-    lein repl
+    cat b12.dat | java -jar vehicle.jar | java -jar satellite.jar | java -jar receiver.jar
 
 At the repl
 

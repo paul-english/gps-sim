@@ -1,8 +1,8 @@
 (ns gps-sim.utils.numeric
-  (:require [schema.core :as s])
+  (:require [schema.macros :as sm])
   (:import [java.math RoundingMode]))
 
-(s/defn round-places :- Double
+(sm/defn round-places :- Double
   [decimals :- Long
    number :- Number]
   (let [factor (Math/pow 10 decimals)]
@@ -12,20 +12,25 @@
                   RoundingMode/HALF_UP)
        factor)))
 
-(s/defn round :- Long
+(comment
+  ;; TODO
+  (defn round [s n]
+    (.setScale (bigdec n) s java.math.RoundingMode/HALF_EVEN)))
+
+(sm/defn round :- Long
   [number :- Number]
   (->> number
        (round-places 0)
        long))
 
-(s/defn num-decimals :- Long
+(sm/defn num-decimals :- Long
   [number :- Number]
   (-> (- number (Math/floor number))
       str
       count
       (- 2)))
 
-(s/defn approx= :- Boolean
+(sm/defn approx= :- Boolean
   [a :- Number
    b :- Number]
   (let [error 0.000001]

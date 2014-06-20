@@ -2,7 +2,8 @@
   "Tools for interactive development with the REPL. This file should
   not be included in a production build of the application."
   (:use midje.repl
-        clojure.core.matrix)
+        clojure.core.matrix
+        gps-sim.utils.schemas)
   (:require [clojure.core.matrix.operators :refer [**]]
             [clojure.java.io :as io]
             [clojure.java.javadoc :refer (javadoc)]
@@ -18,7 +19,7 @@
             [gps-sim.vehicle :as v]
             [gps-sim.receiver :as r]
             [gps-sim.utils.io :as gps-io]
-            [gps-sim.utils.schemas :as schemas]))
+            [gps-sim.utils.matrix :refer :all]))
 
 (def system
   "A Var containing an object representing the application under

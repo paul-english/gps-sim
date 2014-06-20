@@ -1,6 +1,7 @@
 (ns gps-sim.utils.matrix-test
   (:use midje.sweet
-        gps-sim.utils.matrix))
+        gps-sim.utils.matrix)
+  (:require [gps-sim.constants :refer [tau]]))
 
 (with-state-changes [(around :facts (schema.macros/with-fn-validation ?form))]
   (facts "Matrix"
@@ -46,9 +47,9 @@
           [3 7 11 4 8 12]])
 
     (fact "rotation transform matrix"
-      (rotation-matrix (bigdec 1/8)) => [[0.7071067811865476 -0.7071067811865475 0]
-                                         [0.7071067811865475 0.7071067811865476 0]
-                                         [0 0 1]]
-      (rotation-matrix (bigdec 1/2)) => [[-1.0 -1.2246467991473532E-16 0]
-                                         [1.2246467991473532E-16 -1.0 0]
-                                         [0 0 1]])))
+      (rotation-matrix (bigdec (* @tau 1/8))) => [[0.7071067811865476 -0.7071067811865475 0]
+                                                  [0.7071067811865475 0.7071067811865476 0]
+                                                  [0 0 1]]
+      (rotation-matrix (bigdec (* @tau 1/2))) => [[-1.0 -1.2246467991473532E-16 0]
+                                                  [1.2246467991473532E-16 -1.0 0]
+                                                  [0 0 1]])))

@@ -39,9 +39,9 @@
        (dms->radians [[102123.0M 40 45 55.0M 1 111 50 58.0M -1 1372.0M]
                       [107061.5M 40 47 19.5M 1 111 49 49.0M -1 1874.5M]
                       [112000.0M 40 48 44.0M 1 111 48 40.0M -1 2377.0M]]))
-      => (just [(just [(roughly 102123.0) 40 45 (roughly 55) 1 111 50 (roughly 58) -1 (roughly 1372)])
-                (just [(roughly 107061.5) 40 47 (roughly 19.5) 1 111 49 (roughly 49) -1 (roughly 1874.5)])
-                (just [(roughly 112000.0) 40 48 (roughly 44) 1 111 48 (roughly 40) -1 (roughly 2377)])]))
+      => (just [(just [(roughly 102123.0 0.1) 40 45 (roughly 55 0.1) 1 111 50 (roughly 58 0.1) -1 (roughly 1372 0.1)])
+                (just [(roughly 107061.5 0.1) 40 47 (roughly 19.5 0.1) 1 111 49 (roughly 49 0.1) -1 (roughly 1874.5 0.1)])
+                (just [(roughly 112000.0 0.1) 40 48 (roughly 44 0.1) 1 111 48 (roughly 40 0.1) -1 (roughly 2377 0.1)])]))
 
     (fact "radians->dms->radians"
       (dms->radians
@@ -49,9 +49,9 @@
                       [107061.5M 0.7118979852728371M -1.9518065506420699M 1874.5M]
                       [112000.0M 0.7123076528333746M -1.9514720292021042M 2377.0M]]))
       => (just
-          [(just [(roughly 102123) (roughly 0.71148) (roughly -1.9521) (roughly 1372)])
-           (just [(roughly 107061) (roughly 0.71189) (roughly -1.9518) (roughly 1874)])
-           (just [(roughly 112000) (roughly 0.71230) (roughly -1.9514) (roughly 2377)])]))
+          [(just [(roughly 102123.0 0.1) (roughly 0.71148 0.1) (roughly -1.9521 0.1) (roughly 1372.0 0.1)])
+           (just [(roughly 107061.5 0.1) (roughly 0.71190 0.1) (roughly -1.9518 0.1) (roughly 1874.5 0.1)])
+           (just [(roughly 112000.0 0.1) (roughly 0.71230 0.1) (roughly -1.9514 0.1) (roughly 2377.0 0.1)])]))
 
     (fact "rad->cartesian"
       (rad->cartesian [[2M 1M 1M 1M]
@@ -61,6 +61,8 @@
                 (just [(roughly 1246635.8649) (roughly 1941520.3259) (roughly 5934708.0837)])
                 (just [(roughly 1858826.3947) (roughly 2894950.5860) (roughly 5358020.0465)])]))
 
+    ;; TODO test for x, or y = 0
+
     (fact "cartesian->rad"
       (cartesian->rad [0M 0M 0M]
                       [[1858826.5991443316M 2894950.904301383M 5358020.6355956085M]
@@ -68,7 +70,11 @@
                        [1858826.3947957244M 2894950.586047284M 5358020.046565919M]])
       => (just [(just [(roughly 0) (roughly 1) (roughly 1) (roughly 1)])
                 (just [(roughly 0) (roughly 1.2) (roughly 1) (roughly 1)])
-                (just [(roughly 0) (roughly 1) (roughly 1) (roughly 0.3)])]))
+                (just [(roughly 0) (roughly 1) (roughly 1) (roughly 0.3)])])
+
+      (cartesian->rad [12123.967274951485M]
+                      [[-1795214.6053696016M -4477178.644777841M 4158593.453213802M]])
+      => (just [[12123.967274951485M 0.7114883177775478M 4.331046621493604M 1371.9996096240357M]]))
 
     (fact "rad->cartesian->rad"
       (cartesian->rad [2M 3M 2.5M] (rad->cartesian [[2M 1M 1M 1M]

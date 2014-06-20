@@ -10,7 +10,7 @@
 
 (with-state-changes [(around :facts (schema.macros/with-fn-validation ?form))]
   (facts "Satellite"
-    (future-fact "Program digests stdin"
+    (fact "Program digests stdin"
                  (with-in-str "102123.0 40 45 55.0 1 111 50 58.0 -1 1372.0
 102232.74 40 45 56.87 1 111 50 56.46 -1 1383.16
 102342.48 40 45 58.75 1 111 50 54.93 -1 1394.33
