@@ -38,7 +38,8 @@ satellite index changes."
         compare-with-next (fn [idx item]
                             (cons (and (< idx last-idx)
                                        (> (first item)
-                                          (first (nth satellites (inc idx))))) item))]
+                                          (first (nth satellites (inc idx)))))
+                                  item))]
     (->> satellites
          (map-indexed compare-with-next)
          (partition-when first)
