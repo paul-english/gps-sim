@@ -34,7 +34,6 @@
 
 (sm/defn radians->dms :- DMSCoordinateList
   [A :- RadCoordinateList]
-  (println "radians->dms" A)
   (let [times (mmul A (transpose [[1 0 0 0]]))
         heights (mmul A (transpose [[0 0 0 1]]))
         radians (emap #(if (or (< % (- @pi)) (> % @pi))

@@ -28,3 +28,5 @@
 
 (defn stdin->matrix []
   (data->matrix (line-seq (java.io.BufferedReader. *in*))))
+
+(defn matrix->stdout [m] (map println m))

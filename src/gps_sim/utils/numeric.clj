@@ -6,22 +6,15 @@
   [decimals :- Long
    number :- Number]
   (let [factor (Math/pow 10 decimals)]
-    ;; TODO this seems like a shit way to deal with the rounding issues..
-    ;; we should use bigdec everywhere really
     (/ (.setScale (bigdec (* factor number)) 0
                   RoundingMode/HALF_UP)
        factor)))
 
-(comment
-  ;; TODO
-  (defn round [s n]
-    (.setScale (bigdec n) s java.math.RoundingMode/HALF_EVEN)))
-
-(sm/defn round :- Long
+(sm/defn round :- BigDecimal
   [number :- Number]
   (->> number
        (round-places 0)
-       long))
+       bigdec))
 
 (sm/defn num-decimals :- Long
   [number :- Number]
@@ -37,7 +30,6 @@
     (and (<= a (+ b error))
          (>= a (- b error)))))
 
-;; TODO schema?
 (defn step-range
   "This version of range deals with annoying rounding errors
 that clojure.core/range doesn't handle well, and is inclusive."

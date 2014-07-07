@@ -24,14 +24,6 @@ interpolation that is being performed here.
         interpolation (num/step-range step)
         transformation (transpose (matrix [(reverse interpolation)
                                            interpolation]))]
-    ;;(println "-- lerp --")
-    ;;(println precision)
-    ;;(println "-" (count interpolation))
-    ;;(println "- interpolation" (count interpolation) interpolation)
-    ;;(pm (transpose [interpolation]))
-    ;;(pm transformation)
-    ;;(println "--" (first (mmul transformation A)))
-    ;;(println "--" (last (mmul transformation A)))
     (emap (partial round-places precision)
           (mmul transformation A))))
 
@@ -48,9 +40,9 @@ that you don't need an interleaving join."
   (apply mapv interleave matrices))
 
 (sm/defn rotation-matrix [theta :- BigDecimal]
-  [[(cos theta)  (- (sin theta)) 0]
-   [(sin theta)     (cos theta)  0]
-   [      0        0     1]])
+  [[(cos theta) (- (sin theta)) 0]
+   [(sin theta) (cos theta) 0]
+   [0 0 1]])
 
 (defn norm
   "A naive implementation of the vector 2-norm. An interface
@@ -58,9 +50,16 @@ for the norm is currently in 0.24.1-SNAPSHOT under
 clojure.core.matrix.linear and it's probably best to use that
 once it's released."
   ([v] (->> v
-          (map #(** % 2))
-          (apply +)
-          sqrt))
+            (map #(** % 2))
+            (apply +)
+            sqrt))
   ([a b] (->> (map #(* %1 %2) a b)
               (apply +)
               sqrt)))
+
+(defn column-map
+  "Map a function a column of a matrix"
+  [f i m]
+  (->> (get-column m i)
+       (emap f)
+       (set-column m i)))
