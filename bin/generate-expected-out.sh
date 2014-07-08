@@ -1,3 +1,5 @@
+#!/bin/sh
+
 cd data
 
 cat b12.dat | java vehicle > expected-b12-vehicle.out
