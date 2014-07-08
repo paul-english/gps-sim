@@ -71,7 +71,7 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
     (parse-cartesian-list (transpose coordinates))))
 
 (defn satellite-time [{:keys [pseudorange vehicle-coordinates new-coordinates]}]
-  (- (map #(dot vehicle-coordinates %) new-coordinates)
+  (- (map #(distance vehicle-coordinates %) new-coordinates)
      (** pseudorange 2)))
 
 (defn gradient [{:keys [pseudorange satellites
