@@ -29,4 +29,8 @@
 (defn stdin->matrix []
   (data->matrix (line-seq (java.io.BufferedReader. *in*))))
 
-(defn matrix->stdout [m] (map println m))
+(defn matrix->stdout [m]
+  (doseq [row m]
+    (->> row
+         (clojure.string/join " ")
+         println)))
