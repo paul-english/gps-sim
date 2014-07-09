@@ -23,12 +23,9 @@
       count
       (- 2)))
 
-(sm/defn approx= :- Boolean
-  [a :- Number
-   b :- Number]
-  (let [error 0.000001]
-    (and (<= a (+ b error))
-         (>= a (- b error)))))
+(defn approx= [a b & {:keys [error]
+                      :or {error 0.000001}}]
+  (<= (- b error) a (+ b error)))
 
 (defn step-range
   "This version of range deals with annoying rounding errors
