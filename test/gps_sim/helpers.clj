@@ -45,6 +45,10 @@
 
                      (doall
                       (map-indexed (fn [i# [actual# expected#]]
+                                     ;; NOTE: midje doesn't seem to
+                                     ;; respect the checker functions
+                                     ;; here, this may be do to the
+                                     ;; macro. May want to file a bug report.
                                      ;;actual# => (just (roughly expected#))
                                      (let [error# 0.000001
                                            approximately-equal# (approx= actual# expected# :error error#)]
