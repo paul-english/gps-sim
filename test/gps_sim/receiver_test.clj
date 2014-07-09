@@ -6,7 +6,8 @@
         clojure.core.matrix.operators)
   (:require [gps-sim.utils.io :refer [file->matrix]]
             [gps-sim.utils.schemas :refer [parse-data
-                                           parse-cartesian-satellite-list]]))
+                                           parse-cartesian-satellite-list]]
+            [gps-sim.helpers :refer [test-data-file data-files]]))
 
 (def input (parse-cartesian-satellite-list
             [[3 12122.917273538935 2.605234313778725E7 2986153.9652697924 4264669.833325115]
@@ -29,7 +30,7 @@
 (with-state-changes [(around :facts (schema.macros/with-fn-validation ?form))]
   (facts "Receiver"
     (future-fact "Program digests stdin"
-      (with-in-str "3 12122.917273538935 2.605234313778725E7 2986153.9652697924 4264669.833325115
+                 (with-in-str "3 12122.917273538935 2.605234313778725E7 2986153.9652697924 4264669.833325115
 4 12122.918115974104 -1.718355633086311E7 -1.8640834276186436E7 7941901.319733662
 8 12122.91517247339 1.8498279256616846E7 -1.4172390064384513E7 -1.2758766855293432E7
 11 12122.929474004011 -2903225.4285143306 -1.9661358537802488E7 1.7630410370147068E7
@@ -45,7 +46,7 @@
 15 12123.91559038413 2.6526107876559697E7 849727.5371656624 -1213536.6884770312
 17 12123.932126911204 4942411.176984259 -1.796329047680593E7 1.8939954441975158E7
 20 12123.930291044038 1.7904260819928236E7 -1.680258096219933E7 1.0145926510738155E7\n"
-        (-main) => :ok))
+                   (-main) => :ok))
 
     (fact "We can group the receiver input by the number of path points we have"
       (let [grouped-satellites (group-by-index-change input)]
@@ -61,4 +62,8 @@
       (let [data (-> "data.dat" file->matrix (get-column 0) parse-data)
             results (run data input)]
         results => (just [(just [(roughly 12123.0) 40 45 (roughly 55.0) 1 111 50 (roughly 58.0) -1 (roughly 1372.0)])
-                          (just [(roughly 12124.0) 40 45 (roughly 55.0) 1 111 50 (roughly 58.0) -1 (roughly 1371.99)])])))))
+                          (just [(roughly 12124.0) 40 45 (roughly 55.0) 1 111 50 (roughly 58.0) -1 (roughly 1371.99)])])))
+
+    (facts "Receiver generates the right output for each data file"
+      (doseq [data-file data-files]
+        (test-data-file :receiver data-file)))))

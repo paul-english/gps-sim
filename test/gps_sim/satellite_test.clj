@@ -6,7 +6,8 @@
         clojure.core.matrix.operators)
   (:require [gps-sim.utils.io :refer [file->matrix]]
             [gps-sim.utils.schemas :refer [parse-data parse-dms-list parse-satellite-list]]
-            [gps-sim.constants :refer [s R]]))
+            [gps-sim.constants :refer [s R]]
+            [gps-sim.helpers :refer [test-data-file data-files]]))
 
 (with-state-changes [(around :facts (schema.macros/with-fn-validation ?form))]
   (facts "Satellite"
@@ -57,7 +58,7 @@
                       [0 0M 1477645.012869009M -1.5214872308462147E7M 2.172908956016601E7M])
       => true)
 
-    (fact "satellite-time"
+    (future-fact "satellite-time"
       #_(satellite-time [])
       )
 
@@ -84,4 +85,8 @@
                           (just [14 (roughly 12123.9308) (roughly 1481513.6606823928) (roughly -1.5214748538998244E7) (roughly 2.1728912799052842E7)])
                           (just [15 (roughly 12123.9155) (roughly 26526107.876559697) (roughly 849727.5371656624) (roughly -1213536.6884770312)])
                           (just [17 (roughly 12123.9321) (roughly 4942411.176984259) (roughly -1.796329047680593E7) (roughly 1.8939954441975158E7)])
-                          (just [20 (roughly 12123.9302) (roughly 17904260.819928236) (roughly -1.680258096219933E7) (roughly 1.0145926510738155E7)])])))))
+                          (just [20 (roughly 12123.9302) (roughly 17904260.819928236) (roughly -1.680258096219933E7) (roughly 1.0145926510738155E7)])])))
+
+    (facts "Satellite generates the right output for each data file"
+      (doseq [data-file data-files]
+        (test-data-file :satellite data-file)))))
