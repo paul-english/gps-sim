@@ -57,6 +57,11 @@ once it's released."
               (apply +)
               sqrt)))
 
+(defn squared-norm [m]
+  (->> m
+       (map #(** % 2))
+       (apply +)))
+
 (defn column-map
   "Map a function a column of a matrix"
   [f i m]

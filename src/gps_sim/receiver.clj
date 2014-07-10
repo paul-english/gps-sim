@@ -15,6 +15,7 @@
             [gps-sim.utils.io :refer [file->matrix stdin->matrix matrix->stdout]]
             [gps-sim.utils.matrix :refer [rotation-matrix
                                           norm
+                                          squared-norm
                                           column-map]]
             [gps-sim.utils.schemas :refer [DMSCoordinateList
                                            DataFile
@@ -58,12 +59,6 @@ satellite index changes."
          (map-indexed compare-with-next)
          (partition-when first)
          (map #(map (fn [i] (drop 1 i)) %)))))
-
-;; TODO this is just a dot product can probably use corematrix fn
-(defn squared-error [m]
-  (->> m
-       (map #(** % 2))
-       (apply +)))
 
 (defn satellite-distances [vehicle satellites]
   (map #(distance % vehicle)
