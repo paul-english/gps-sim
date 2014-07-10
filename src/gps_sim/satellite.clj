@@ -125,8 +125,10 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
       :steps (inc steps))))
 
 (defn solve [start]
-  (first (drop-while #(not (convergent? %))
-                     (iterate #(next-guess %) start))))
+  (->> start
+       (iterate next-guess)
+       (drop-while (comp not convergent?))
+       first))
 
 (sm/defn run :- CartesianSatelliteList
   [data :- DataFile
