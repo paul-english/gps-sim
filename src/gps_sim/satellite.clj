@@ -48,8 +48,7 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
   [vehicle :- CartesianCoordinate
    satellite :- CartesianSatelliteCoordinate]
   (> (dot (drop 2 satellite) vehicle)
-     (/ (dot vehicle vehicle)
-        0.95)))
+     (dot vehicle vehicle)))
 
 (sm/defn satellite-location :- CartesianCoordinateList
   [satellites :- SatelliteList
