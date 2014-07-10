@@ -1,9 +1,7 @@
-/target
 /classes
 /checkouts
 pom.xml
 pom.xml.asc
-*.jar
 *.class
 /.lein-*
 /.nrepl-port
@@ -12,3 +10,7 @@ data/*
 *.log
 *.aux
 *.synctex.gz
+/target/classes
+/target/gps-sim-0.1.0-SNAPSHOT.jar
+/target/repl-port
+/target/stale/extract-native.dependencies
