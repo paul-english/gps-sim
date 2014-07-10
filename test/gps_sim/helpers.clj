@@ -1,7 +1,7 @@
 (ns gps-sim.helpers
   (:use midje.sweet)
   (:require [clojure.java.io :refer [resource]]
-            [clojure.core.matrix :refer [emap]]
+            [clojure.core.matrix :refer [emap get-column]]
             [gps-sim.vehicle :as vehicle]
             [gps-sim.satellite :as satellite]
             [gps-sim.receiver :as receiver]
@@ -28,14 +28,19 @@
          output# (->  in-out# ~program :out resource slurp)]
      (facts (str ~program " works for data file: " ~name)
        (with-in-str input#
+         (println "----- testing...." ~program ~name)
          (let [actual-output# (with-out-str ((-> in-out# ~program :main)))
                actual-rows# (split-output actual-output#)
                expected-rows# (split-output output#)]
-           ;;(println "actual-output" actual-output#)
-           ;;(println "expected-output" output#)
+
            (fact "Actual & expected row counts match"
-             (println "counts actual & expected" (count actual-rows#) (count expected-rows#))
-             (count actual-rows#) => (count expected-rows#))
+             (count actual-rows#) => (count expected-rows#)
+
+             (when-not (= (count actual-rows#) (count expected-rows#))
+               (println "----- outputs don't match for file" ~name)
+               (println "counts actual & expected" (count actual-rows#) (count expected-rows#))
+               (println "actual-output" actual-output#)
+               (println "expected-output" output#)))
 
            (fact "Individual elements match"
              (doall
@@ -53,7 +58,8 @@
                                      (let [error# 0.000001
                                            approximately-equal# (approx= actual# expected# :error error#)]
                                        (when-not approximately-equal#
-                                         (println "-- not-equal" i# actual# expected#))
+                                         ;;(println "-- not-equal" i# actual# expected#)
+                                         )
                                        ;;approximately-equal# => true
                                        ))
                                    (zipmap actual-row#

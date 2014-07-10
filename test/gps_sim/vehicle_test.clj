@@ -11,7 +11,8 @@
   (facts "Vehicle"
     (fact "Program digests stdin"
       (with-in-str "102123.0 112000.0 90 40 48 44 1 111 48 40 -1 2377\n"
-        (-main) => :ok))
+        (with-out-str
+          (-main) => :ok)))
 
     (future-fact "Program creates a linear interpolation from a hardcoded start point to our input point"
                  (let [output (run [[102123.0M 112000.0M 90 40 48 44 1 111 48 40 -1 2377]])]
@@ -19,6 +20,6 @@
                    (shape output) => [91 10]
                    output => vehicle-expected-output))
 
-    (facts "Satellite generates the right output for each data file"
+    (future-facts "Satellite generates the right output for each data file"
       (doseq [data-file data-files]
         (test-data-file :vehicle data-file)))))

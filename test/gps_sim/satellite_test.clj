@@ -17,7 +17,8 @@
 102342.48 40 45 58.75 1 111 50 54.93 -1 1394.33
 102452.23 40 46 0.63 1 111 50 53.4 -1 1405.5
 102561.97 40 46 2.51 1 111 50 51.86 -1 1416.66\n"
-        (-main) => :ok))
+        (with-out-str
+          (-main) => :ok)))
 
     (fact "Satellite locations"
       (let [satellites (parse-satellite-list [[ 0 1.000  0.000 0.000  0.000  0.574 0.819 43082.045 20200000.000 0.000]
@@ -58,10 +59,6 @@
                       [0 0M 1477645.012869009M -1.5214872308462147E7M 2.172908956016601E7M])
       => true)
 
-    (future-fact "satellite-time"
-      #_(satellite-time [])
-      )
-
     (fact "Program does the right stuff"
       (let [data (-> "data.dat" file->matrix (get-column 0) parse-data)
             input (parse-dms-list [[12123.0 40 45 55.0 1 111 50 58.0 -1 1372.0] [12124.0 40 45 55.0 1 111 50 58.0 -1 1372.0]])
@@ -87,6 +84,6 @@
                           (just [17 (roughly 12123.9321) (roughly 4942411.176984259) (roughly -1.796329047680593E7) (roughly 1.8939954441975158E7)])
                           (just [20 (roughly 12123.9302) (roughly 17904260.819928236) (roughly -1.680258096219933E7) (roughly 1.0145926510738155E7)])])))
 
-    (facts "Satellite generates the right output for each data file"
+    (future-facts "Satellite generates the right output for each data file"
       (doseq [data-file data-files]
         (test-data-file :satellite data-file)))))
