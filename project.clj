@@ -4,10 +4,10 @@
   :license {:name ""
             :url ""}
   :dependencies [[clatrix "0.3.0"]
-                 [midje "1.6.3"]
                  [net.mikera/core.matrix "0.26.0"]
                  [org.clojure/clojure "1.6.0"]]
-  :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]]
+  :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
+                                  [midje "1.6.3"]]
                    :source-paths ["dev"]
                    :aot :all}
              :vehicle {:main gps-sim.vehicle
