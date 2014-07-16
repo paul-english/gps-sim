@@ -2,8 +2,7 @@
   "Tools for interactive development with the REPL. This file should
   not be included in a production build of the application."
   (:use midje.repl
-        clojure.core.matrix
-        gps-sim.utils.schemas)
+        clojure.core.matrix)
   (:require [clojure.core.matrix.operators :refer [**]]
             [clojure.java.io :as io]
             [clojure.java.javadoc :refer (javadoc)]

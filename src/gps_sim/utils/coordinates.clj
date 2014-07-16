@@ -2,19 +2,11 @@
   (:refer-clojure :exclude [* - / + ==])
   (:use clojure.core.matrix
         clojure.core.matrix.operators)
-  (:require [schema.macros :as sm]
-            [gps-sim.constants :refer [pi R tau]]
-            [gps-sim.utils.schemas :refer [CartesianCoordinateList
-                                           DMSCoordinateList
-                                           RadCoordinateList
-                                           parse-rad-list
-                                           parse-dms-list
-                                           parse-cartesian-list]]
+  (:require [gps-sim.constants :refer [pi R tau]]
             [gps-sim.utils.matrix :refer [join-1 join-1-interleave]]
             [gps-sim.utils.numeric :refer [round-places]]))
 
-(sm/defn dms->radians :- RadCoordinateList
-  [A :- DMSCoordinateList]
+(defn dms->radians [A]
   (let [->rad (/ @pi 180)
         deg->rad (* 1 ->rad)
         m->rad (* 1/60 ->rad)
@@ -28,11 +20,9 @@
                      (mmul A)
                      (* orientations))
         heights (mmul A (transpose [[0 0 0 0 0 0 0 0 0 1]]))]
-    (parse-rad-list
-     (join-1 times radians heights))))
+    (join-1 times radians heights)))
 
-(sm/defn radians->dms :- DMSCoordinateList
-  [A :- RadCoordinateList]
+(defn radians->dms [A]
   (let [times (mmul A (transpose [[1 0 0 0]]))
         heights (mmul A (transpose [[0 0 0 1]]))
         radians (emap #(if (or (< % (- @pi)) (> % @pi))
@@ -51,13 +41,11 @@
         minutes-decimal (* 60 (- positive-degrees degrees))
         minutes (emap #(Math/floor %) minutes-decimal)
         seconds (* 60 (- minutes-decimal minutes))]
-    (parse-dms-list
-     (join-1 times
-             (join-1-interleave degrees minutes seconds orientations)
-             heights))))
+    (join-1 times
+            (join-1-interleave degrees minutes seconds orientations)
+            heights)))
 
-(sm/defn rad->cartesian :- CartesianCoordinateList
-  [A :- RadCoordinateList]
+(defn rad->cartesian [A]
   (let [psi (get-column A 1)
         lambda (get-column A 2)
         h (get-column A 3)
@@ -67,11 +55,9 @@
         _ (println "x" x)
         y (* rho (cos psi) (sin lambda))
         z (* rho (sin psi))]
-    (parse-cartesian-list (transpose [x y z]))))
+    (transpose [x y z])))
 
-(sm/defn cartesian->rad :- RadCoordinateList
-  [times :- [Double]
-   A :- CartesianCoordinateList]
+(defn cartesian->rad [times A]
   (let [x (get-column A 0)
         y (get-column A 1)
         z (get-column A 2)
@@ -91,4 +77,4 @@
                   (< x 0) (+ @pi (atan (/ y x)))))
                x y)
         h (- rho @R)]
-    (parse-rad-list (transpose [times psi lambda h]))))
+    (transpose [times psi lambda h])))

@@ -4,8 +4,6 @@
   (:use clojure.core.matrix
         clojure.core.matrix.operators)
   (:require [clojure.java.io :as io]
-            [schema.macros :as sm]
-            [schema.coerce :as coerce]
             ;; TODO
             ;;[clatrix.core :refer [norm]]
             [gps-sim.constants :refer [read-constants! tau s c]]
@@ -18,13 +16,6 @@
                                           norm
                                           squared-norm
                                           column-map]]
-            [gps-sim.utils.schemas :refer [DMSCoordinateList
-                                           DataFile
-                                           CartesianSatelliteList
-                                           parse-data
-                                           parse-dms-list
-                                           parse-cartesian-satellite-list
-                                           parse-cartesian-list]]
             [gps-sim.utils.numeric :refer [round-places] :as numeric]
             [gps-sim.utils.sequences :refer [partition-when]]))
 
@@ -45,11 +36,11 @@
        (column-map numeric/round 3)
        (column-map numeric/round 7)))
 
-(sm/defn group-by-index-change :- [CartesianSatelliteList]
+(defn group-by-index-change
   "Input for this program comes in as a list of multiple satellites for each
 path point we need to interpolate. This function groups the input when our
 satellite index changes."
-  [satellites :- CartesianSatelliteList]
+  [satellites]
   (let [last-idx (dec (count satellites))
         compare-with-next (fn [idx item]
                             (cons (and (< idx last-idx)
@@ -360,8 +351,7 @@ satellite index changes."
         _ (println "---- path-point" path-point)
         path-point (mmul rotation path-point)
         _ (println "---- path-point w/ rotation" path-point)
-        path-rad (cartesian->rad [path-time]
-                                 (parse-cartesian-list [path-point]))
+        path-rad (cartesian->rad [path-time] [path-point])
         _ (println "path-rad" path-rad)
         path-dms (radians->dms path-rad)
         ;;_ (println "path-dms" path-dms)
@@ -369,9 +359,7 @@ satellite index changes."
     (println "path-rounded" path-rounded)
     path-rounded))
 
-(sm/defn run :- DMSCoordinateList
-  [data :- DataFile
-   input :- CartesianSatelliteList]
+(defn run [data input]
   (read-constants! data)
   (let [out (->> input
                  group-by-index-change
@@ -382,10 +370,8 @@ satellite index changes."
 (defn -main [& args]
   (let [data (-> "data.dat"
                  file->matrix
-                 (get-column 0)
-                 parse-data)]
+                 (get-column 0))]
     (->> (stdin->matrix)
-         parse-cartesian-satellite-list
          (run data)
          matrix->stdout)
     :ok))

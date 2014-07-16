@@ -3,39 +3,23 @@
   (:refer-clojure :exclude [* - + == /])
   (:use clojure.core.matrix
         clojure.core.matrix.operators)
-  (:require [schema.macros :as sm]
-            [schema.coerce :as coerce]
-            [gps-sim.constants :refer [read-constants! R s c tau]]
+  (:require [gps-sim.constants :refer [read-constants! R s c tau]]
             [gps-sim.utils.coordinates :refer [dms->radians rad->cartesian cartesian->rad]]
             [gps-sim.utils.io :refer [file->matrix stdin->matrix matrix->stdout]]
-            [gps-sim.utils.matrix :refer [join-1 rotation-matrix]]
-            [gps-sim.utils.schemas :refer [DMSCoordinateList
-                                           CartesianCoordinate
-                                           CartesianCoordinateList
-                                           DataFile
-                                           CartesianSatelliteCoordinate
-                                           CartesianSatelliteList
-                                           SatelliteList
-                                           RadCoordinateList
-                                           parse-data
-                                           parse-dms-list
-                                           parse-cartesian-list
-                                           parse-cartesian-satellite-list]]))
+            [gps-sim.utils.matrix :refer [join-1 rotation-matrix]]))
 
 (set! *warn-on-reflection* true)
 (set! *unchecked-math* true)
 
-(sm/defn rotate-coordinates :- CartesianCoordinateList
-  [times :- [Double]
-   coordinates :- CartesianCoordinateList]
+(defn rotate-coordinates [times coordinates]
   (let [theta (/ (* @tau times) @s)
         rotations (emap rotation-matrix theta)
         rotated (map #(mmul %1 %2)
                      rotations
                      coordinates)]
-    (parse-cartesian-list rotated)))
+    rotated))
 
-(sm/defn above-horizon? :- Boolean
+(defn above-horizon?
   "To determine if a satellite is above the horizon,
 we can project the satellite vector onto the vehicle
 position vector. Then if the projection is greater
@@ -45,14 +29,12 @@ above the horizon. This can be simplified as follows,
 proj(x_s, x_V) = \\frac{x_s \\cdot x_V}{|| x_V ||} &> || x_V || \\\\
 x_s \\cdot x_V &> || x_V ||^2
 x_s \\cdot x_V &> x_V \\cdot x_V"
-  [vehicle :- CartesianCoordinate
-   satellite :- CartesianSatelliteCoordinate]
+  [vehicle satellite]
   (> (dot (drop 2 satellite) vehicle)
      (dot vehicle vehicle)))
 
-(sm/defn satellite-location :- CartesianCoordinateList
-  [satellites :- SatelliteList
-   t :- [Double]]
+(defn satellite-location
+  [satellites t]
   (let [u (mmul satellites (transpose [[0 1 0 0 0 0 0 0 0 0]
                                        [0 0 1 0 0 0 0 0 0 0]
                                        [0 0 0 1 0 0 0 0 0 0]]))
@@ -67,7 +49,7 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
         coordinates (* (+ @R h)
                        (+ (* (transpose u) (cos theta))
                           (* (transpose v) (sin theta))))]
-    (parse-cartesian-list (transpose coordinates))))
+    (transpose coordinates)))
 
 (defn satellite-time [{:keys [pseudorange vehicle-coordinates new-coordinates]}]
   (- (map #(distance vehicle-coordinates %) new-coordinates)
@@ -130,9 +112,7 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
        (drop-while (comp not convergent?))
        first))
 
-(sm/defn run :- CartesianSatelliteList
-  [data :- DataFile
-   input :- DMSCoordinateList]
+(defn run [data input]
   (read-constants! data)
   (let [satellites (->> data
                         (drop 4)
@@ -166,17 +146,15 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
                                                            (:satellite-times solution)])
                                                (:satellite-coordinates solution))]
                  (filter (partial above-horizon? vehicle)
-                         (parse-cartesian-satellite-list solved-satellites))))
+                         solved-satellites)))
              input-radians
              vehicles))))
 
 (defn -main [& args]
   (let [data (-> "data.dat"
                  file->matrix
-                 (get-column 0)
-                 parse-data)]
+                 (get-column 0))]
     (->> (stdin->matrix)
-         parse-dms-list
          (run data)
          matrix->stdout)
     :ok))
