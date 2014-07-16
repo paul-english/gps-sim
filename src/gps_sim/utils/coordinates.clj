@@ -37,9 +37,9 @@
                              (mmul radians))
         orientations (emap #(if (pos? %) 1 -1) degrees-decimal)
         positive-degrees (emap abs degrees-decimal)
-        degrees (emap #(Math/floor %) positive-degrees)
+        degrees (emap #(int (Math/floor %)) positive-degrees)
         minutes-decimal (* 60 (- positive-degrees degrees))
-        minutes (emap #(Math/floor %) minutes-decimal)
+        minutes (emap #(int (Math/floor %)) minutes-decimal)
         seconds (* 60 (- minutes-decimal minutes))]
     (join-1 times
             (join-1-interleave degrees minutes seconds orientations)
