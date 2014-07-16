@@ -26,9 +26,9 @@
 (set! *unchecked-math* true)
 
 (sm/defn rotate-coordinates :- CartesianCoordinateList
-  [times :- [BigDecimal]
+  [times :- [Double]
    coordinates :- CartesianCoordinateList]
-  (let [theta (with-precision 20 (/ (* @tau times) @s))
+  (let [theta (/ (* @tau times) @s)
         rotations (emap rotation-matrix theta)
         rotated (map #(mmul %1 %2)
                      rotations
@@ -52,7 +52,7 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
 
 (sm/defn satellite-location :- CartesianCoordinateList
   [satellites :- SatelliteList
-   t :- [BigDecimal]]
+   t :- [Double]]
   (let [u (mmul satellites (transpose [[0 1 0 0 0 0 0 0 0 0]
                                        [0 0 1 0 0 0 0 0 0 0]
                                        [0 0 0 1 0 0 0 0 0 0]]))
@@ -62,8 +62,8 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
         period (get-column satellites 7)
         h (get-column satellites 8)
         phase (get-column satellites 9)
-        theta (with-precision 20 (+ (/ (* @tau t) period)
-                                phase))
+        theta (+ (/ (* @tau t) period)
+             phase)
         coordinates (* (+ @R h)
                        (+ (* (transpose u) (cos theta))
                           (* (transpose v) (sin theta))))]
@@ -85,13 +85,13 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
         periods (get-column satellites 7)
         heights (get-column satellites 8)
         phases (get-column satellites 9)
-        theta (with-precision 20 (+ (/ (* @tau satellite-times) periods)
-                                phases))
+        theta (+ (/ (* @tau satellite-times) periods)
+             phases)
 
-        location-gradient (with-precision 20 (* (/ @tau periods)
-                                                (+ @R heights)
-                                                (+ (* (- (transpose u)) (sin theta))
-                                                   (* (transpose v) (cos theta)))))
+        location-gradient (* (/ @tau periods)
+                             (+ @R heights)
+                             (+ (* (- (transpose u)) (sin theta))
+                                (* (transpose v) (cos theta))))
         coordinate-diffs (- new-coordinates
                             (repeat (count satellites) vehicle-coordinates))
         out (* 2 (+ (* @c @c pseudorange)
@@ -113,7 +113,7 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
                           satellite-times vehicle-times
                           satellites] :as params}]
   (let [new-coordinates (satellite-location satellites
-                                            (map bigdec satellite-times))
+                                            satellite-times)
         new-times (newtons (assoc params :new-coordinates new-coordinates))
         new-pseudorange (- vehicle-times new-times)
         error (map distance satellite-times new-times)]
@@ -147,10 +147,10 @@ x_s \\cdot x_V &> x_V \\cdot x_V"
      (mapcat (fn [[time psi lambda h] vehicle]
                (let [times (repeat (count satellites) time)
                      satellite-coordinates (satellite-location indexed-satellites times)
-                     pseudorange (with-precision 20 (/ (map distance
-                                                            (repeat (count satellites) vehicle)
-                                                            satellite-coordinates)
-                                                       @c))
+                     pseudorange (/ (map distance
+                                         (repeat (count satellites) vehicle)
+                                         satellite-coordinates)
+                                    @c)
                      satellite-times (- time pseudorange)
                      solution (solve {:satellites indexed-satellites
                                       :satellite-coordinates satellite-coordinates

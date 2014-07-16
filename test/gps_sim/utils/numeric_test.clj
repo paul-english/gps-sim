@@ -11,8 +11,8 @@
       (round-places 3 0.294857) => 0.295
       (round-places 4 0.294857) => 0.2949)
     (fact "Plain old rounding"
-      (round 0.6) => 1.0M
-      (round 0.3) => 0.0M)
+      (round 0.6) => 1.0
+      (round 0.3) => 0.0)
     (fact "Getting the number of digits past a decimal point"
       (num-decimals 0.294857) => 6
       (num-decimals 0.1) => 1

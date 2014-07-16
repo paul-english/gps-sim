@@ -15,37 +15,34 @@
 
 (sm/defn dms->radians :- RadCoordinateList
   [A :- DMSCoordinateList]
-  (with-precision 20
-    (let [->rad (/ @pi 180)
-          deg->rad (* 1 ->rad)
-          m->rad (* 1/60 ->rad)
-          s->rad (* 1/3600 ->rad)
-          times (mmul A (transpose [[1 0 0 0 0 0 0 0 0 0]]))
-          orientations (mmul A (transpose [[0 0 0 0 1 0 0 0 0 0]
-                                           [0 0 0 0 0 0 0 0 1 0]]))
-          radians (->> [[0 deg->rad m->rad s->rad 0 0 0 0 0 0]
-                        [0 0 0 0 0 deg->rad m->rad s->rad 0 0]]
-                       transpose
-                       (mmul A)
-                       (* orientations))
-          heights (mmul A (transpose [[0 0 0 0 0 0 0 0 0 1]]))]
-      (parse-rad-list
-       (join-1 times radians heights)))))
+  (let [->rad (/ @pi 180)
+        deg->rad (* 1 ->rad)
+        m->rad (* 1/60 ->rad)
+        s->rad (* 1/3600 ->rad)
+        times (mmul A (transpose [[1 0 0 0 0 0 0 0 0 0]]))
+        orientations (mmul A (transpose [[0 0 0 0 1 0 0 0 0 0]
+                                         [0 0 0 0 0 0 0 0 1 0]]))
+        radians (->> [[0 deg->rad m->rad s->rad 0 0 0 0 0 0]
+                      [0 0 0 0 0 deg->rad m->rad s->rad 0 0]]
+                     transpose
+                     (mmul A)
+                     (* orientations))
+        heights (mmul A (transpose [[0 0 0 0 0 0 0 0 0 1]]))]
+    (parse-rad-list
+     (join-1 times radians heights))))
 
 (sm/defn radians->dms :- DMSCoordinateList
   [A :- RadCoordinateList]
   (let [times (mmul A (transpose [[1 0 0 0]]))
         heights (mmul A (transpose [[0 0 0 1]]))
         radians (emap #(if (or (< % (- @pi)) (> % @pi))
-                         (with-precision 20
-                             (let [i (int (/ (+ % @pi) @tau))]
-                               (- % (* (if (< % 0) (dec i) i)
-                                       @tau))))
+                         (let [i (int (/ (+ % @pi) @tau))]
+                           (- % (* (if (< % 0) (dec i) i)
+                                   @tau)))
                          %)
                       A)
         degrees-decimal (->> [[0 (/ 180 @pi) 0 0]
                               [0 0 (/ 180 @pi) 0]]
-                             (with-precision 20)
                              transpose
                              (mmul radians))
         orientations (emap #(if (pos? %) 1 -1) degrees-decimal)
@@ -73,7 +70,7 @@
     (parse-cartesian-list (transpose [x y z]))))
 
 (sm/defn cartesian->rad :- RadCoordinateList
-  [times :- [BigDecimal]
+  [times :- [Double]
    A :- CartesianCoordinateList]
   (let [x (get-column A 0)
         y (get-column A 1)
@@ -81,7 +78,7 @@
         rho (sqrt (+ (** x 2) (** y 2) (** z 2)))
         psi (map (fn [z rho]
                  (cond
-                  (not (= rho 0)) (with-precision 20 (asin (/ z rho)))
+                  (not (= rho 0)) (asin (/ z rho))
                   (> z 0) (/ @pi 2)
                   (< z 0) (- (/ @pi 2))))
                z rho)
@@ -89,12 +86,9 @@
                  (cond
                   (and (= x 0) (> y 0)) (/ @pi 2)
                   (and (= x 0) (< y 0)) (- (/ @pi 2))
-                  (and (> x 0) (> y 0)) (with-precision 20
-                                          (atan (/ y x)))
-                  (and (> x 0) (< y 0)) (with-precision 20
-                                          (+ @tau (atan (/ y x))))
-                  (< x 0) (with-precision 20
-                            (+ @pi (atan (/ y x))))))
+                  (and (> x 0) (> y 0)) (atan (/ y x))
+                  (and (> x 0) (< y 0)) (+ @tau (atan (/ y x)))
+                  (< x 0) (+ @pi (atan (/ y x)))))
                x y)
         h (- rho @R)]
     (parse-rad-list (transpose [times psi lambda h]))))

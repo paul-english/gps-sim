@@ -27,13 +27,13 @@
                                               [ 0 1.000  0.000 0.000  0.000  0.574 0.819 43082.045 20200000.000 4.712]
                                               [ 0 0.500  0.866 0.000 -0.497  0.287 0.819 43082.045 20200000.000 1.000]])]
         (binding [R (atom 0)]
-          (satellite-location satellites (repeat 5 0M))
+          (satellite-location satellites (repeat 5 0.0))
           => (just [(just [(roughly 20200010) (roughly 0) (roughly 0)])
                     (just [(roughly -4114.2007) (roughly 11594805.4995) (roughly 16543807.8468)])
                     (just [(roughly -20200008.3240) (roughly -4723.1023) (roughly -6739.0606)])
                     (just [(roughly -7857.4074) (roughly -11594804.8628) (roughly -16543806.9384)])
                     (just [(roughly -2990811.9962) (roughly 14329967.2783) (roughly 13921134.5701)])]))
-        (satellite-location satellites (repeat 5 1M))
+        (satellite-location satellites (repeat 5 1.0))
         => (just [(just [(roughly 26567444.2174) (roughly 2224.0535) (roughly 3173.3446)])
                   (just [(roughly -9285.7340) (roughly 15249712.2115) (roughly 21758735.7164)])
                   (just [(roughly -26567440.4349) (roughly -8435.9689) (roughly -12036.6874)])
@@ -41,22 +41,22 @@
                   (just [(roughly -3936244.5073) (roughly 18844827.7017) (roughly 18311060.2605)])])))
 
     (fact "rotate-coordinates"
-      (let [coordinate-matrix [[2M 1M 1M]
-                               [0M 2M 0M]
-                               [1M 0M 3M]]
-            theta (* @s [1M 0.5M 0.25M])]
+      (let [coordinate-matrix [[2.0 1.0 1.0]
+                               [0.0 2.0 0.0]
+                               [1.0 0.0 3.0]]
+            theta (* @s [1 0.5 0.25])]
         (rotate-coordinates theta coordinate-matrix)
         => (just [(just [(roughly 2) (roughly 1) (roughly 1)])
                   (just [(roughly 0 0.000001) (roughly -2) (roughly 0)])
                   (just [(roughly 0 0.000001) (roughly 1) (roughly 3)])])))
 
     (fact "above-horizon?"
-      (above-horizon? [2324235.487196124M -4226801.805397957M 4158593.4531539655M]
-                      [14 34976.66717943274M -6543705.5766621735M 14768997.646611637M -21092314.55058739M])
+      (above-horizon? [2324235.487196124 -4226801.805397957 4158593.4531539655]
+                      [14 34976.66717943274 -6543705.5766621735 14768997.646611637 -21092314.55058739])
       => false
 
-      (above-horizon? [2323927.257730319M -4226971.280105327M 4158593.4531539655M]
-                      [0 0M 1477645.012869009M -1.5214872308462147E7M 2.172908956016601E7M])
+      (above-horizon? [2323927.257730319 -4226971.280105327 4158593.4531539655]
+                      [0 0.0 1477645.012869009 -1.5214872308462147E7 2.172908956016601E7])
       => true)
 
     (fact "Program does the right stuff"

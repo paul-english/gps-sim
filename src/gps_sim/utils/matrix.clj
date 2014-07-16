@@ -39,7 +39,7 @@ that you don't need an interleaving join."
   [& matrices]
   (apply mapv interleave matrices))
 
-(sm/defn rotation-matrix [theta :- BigDecimal]
+(sm/defn rotation-matrix [theta :- Double]
   [[(cos theta) (- (sin theta)) 0]
    [(sin theta) (cos theta) 0]
    [0 0 1]])

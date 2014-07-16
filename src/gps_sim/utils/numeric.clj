@@ -10,11 +10,10 @@
                   RoundingMode/HALF_UP)
        factor)))
 
-(sm/defn round :- BigDecimal
+(sm/defn round :- Double
   [number :- Number]
   (->> number
-       (round-places 0)
-       bigdec))
+       (round-places 0)))
 
 (sm/defn num-decimals :- Long
   [number :- Number]

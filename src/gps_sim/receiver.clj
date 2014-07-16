@@ -4,7 +4,6 @@
   (:use clojure.core.matrix
         clojure.core.matrix.operators)
   (:require [clojure.java.io :as io]
-            [clojure.core.async :refer [chan go <! >!!]]
             [schema.macros :as sm]
             [schema.coerce :as coerce]
             ;; TODO
@@ -32,7 +31,7 @@
 (set! *warn-on-reflection* true)
 (set! *unchecked-math* true)
 
-(def b12 (->> [[0M 40 45 55.0M 1 111 50 58.0M -1 1372.0M]]
+(def b12 (->> [[0.0 40 45 55.0 1 111 50 58.0 -1 1372.0]]
               dms->radians
               rad->cartesian
               first))
@@ -315,7 +314,7 @@ satellite index changes."
         time-diff 0.05
         path-time (+ start-time time-diff)
         theta (/ (* @tau path-time) @s)
-        rotation (rotation-matrix (bigdec theta))
+        rotation (rotation-matrix theta)
         _ (println "starting at b12" (mmul rotation b12))
         solution (loop [vehicle-position (mmul rotation b12)
                         iterations 0]
@@ -357,11 +356,11 @@ satellite index changes."
         _ (println "ran in" (:iterations solution))
 
         theta (/ (* (- @tau) path-time) @s)
-        rotation (rotation-matrix (bigdec theta))
+        rotation (rotation-matrix theta)
         _ (println "---- path-point" path-point)
         path-point (mmul rotation path-point)
         _ (println "---- path-point w/ rotation" path-point)
-        path-rad (cartesian->rad [(bigdec path-time)]
+        path-rad (cartesian->rad [path-time]
                                  (parse-cartesian-list [path-point]))
         _ (println "path-rad" path-rad)
         path-dms (radians->dms path-rad)
@@ -374,13 +373,6 @@ satellite index changes."
   [data :- DataFile
    input :- CartesianSatelliteList]
   (read-constants! data)
-
-  (println "b12-rad" (->> [[0M 40 45 55.0M 1 111 50 58.0M -1 1372.0M]]
-                          dms->radians))
-  (println "initial b12" (->> [[0M 40 45 55.0M 1 111 50 58.0M -1 1372.0M]]
-                              dms->radians
-                              rad->cartesian
-                              first))
   (let [out (->> input
                  group-by-index-change
                  (mapcat trilaterate-vehicle))]

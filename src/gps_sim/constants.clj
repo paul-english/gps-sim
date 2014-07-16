@@ -4,9 +4,9 @@
 
 (def ^:dynamic pi (atom Math/PI))
 (def ^:dynamic tau (atom (* 2 @pi)))
-(def ^:dynamic c (atom 299792458M))
-(def ^:dynamic R (atom 6367444.5M))
-(def ^:dynamic s (atom 86164.09M))
+(def ^:dynamic c (atom 299792458))
+(def ^:dynamic R (atom 6367444.5))
+(def ^:dynamic s (atom 86164.09))
 
 (sm/defn set-constants! [constants :- Constants]
   (reset! pi (:pi constants))
