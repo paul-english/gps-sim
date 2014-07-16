@@ -2,8 +2,7 @@
   (:refer-clojure :exclude [* - / + ==])
   (:use clojure.core.matrix
         clojure.core.matrix.operators)
-  (:require [schema.macros :as sm]
-            [gps-sim.constants :refer [tau]]
+  (:require [gps-sim.constants :refer [tau]]
             [gps-sim.utils.numeric :refer [round-places num-decimals] :as num]))
 
 (defn lerp
@@ -39,7 +38,7 @@ that you don't need an interleaving join."
   [& matrices]
   (apply mapv interleave matrices))
 
-(sm/defn rotation-matrix [theta :- Double]
+(defn rotation-matrix [theta]
   [[(cos theta) (- (sin theta)) 0]
    [(sin theta) (cos theta) 0]
    [0 0 1]])

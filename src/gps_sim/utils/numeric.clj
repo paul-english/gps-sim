@@ -1,22 +1,19 @@
 (ns gps-sim.utils.numeric
-  (:require [schema.macros :as sm])
   (:import [java.math RoundingMode]))
 
-(sm/defn round-places :- Double
-  [decimals :- Long
-   number :- Number]
+(defn round-places
+  [decimals number]
   (let [factor (Math/pow 10 decimals)]
     (/ (.setScale (bigdec (* factor number)) 0
                   RoundingMode/HALF_UP)
        factor)))
 
-(sm/defn round :- Double
-  [number :- Number]
+(defn round [number]
   (->> number
        (round-places 0)))
 
-(sm/defn num-decimals :- Long
-  [number :- Number]
+(defn num-decimals
+  [number]
   (-> (- number (Math/floor number))
       str
       count
