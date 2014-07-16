@@ -65,7 +65,9 @@
         lambda (get-column A 2)
         h (get-column A 3)
         rho (+ @R h)
+        _ (println "rho" rho)
         x (* rho (cos psi) (cos lambda))
+        _ (println "x" x)
         y (* rho (cos psi) (sin lambda))
         z (* rho (sin psi))]
     (parse-cartesian-list (transpose [x y z]))))

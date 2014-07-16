@@ -3,7 +3,9 @@
   (:refer-clojure :exclude [* - / + ==])
   (:use clojure.core.matrix
         clojure.core.matrix.operators)
-  (:require [schema.macros :as sm]
+  (:require [clojure.java.io :as io]
+            [clojure.core.async :refer [chan go <! >!!]]
+            [schema.macros :as sm]
             [schema.coerce :as coerce]
             ;; TODO
             ;;[clatrix.core :refer [norm]]
@@ -181,43 +183,66 @@ satellite index changes."
      [dx-dz dy-dz dz-dz]]))
 
 (defn jacobian [partials]
-  (let [J-0-0 (sqrt (mget partials 0 0))
+  (let [;;abs-sqrt (comp sqrt abs)
+        J-0-0 (sqrt (mget partials 0 0))
         J-1-0 (/ (mget partials 1 0)
                  (sqrt (mget partials 0 0)))
         J-2-0 (/ (mget partials 2 0)
                  (sqrt (mget partials 0 0)))
         J-1-1 (sqrt (- (mget partials 1 1)
-                       (** (/ (mget partials 1 0)
-                              (sqrt (mget partials 0 0)))
-                           2)))
+                           (** (/ (mget partials 1 0)
+                                  (sqrt (mget partials 0 0)))
+                               2)))
         J-2-1 (/ (- (mget partials 2 1)
                     (* (/ (mget partials 2 0)
                           (sqrt (mget partials 0 0)))
                        (/ (mget partials 1 0)
                           (sqrt (mget partials 0 0)))))
                  (sqrt (- (mget partials 1 1)
-                          (** (/ (mget partials 1 0)
-                                 (sqrt (mget partials 0 0)))
-                              2))))
+                              (** (/ (mget partials 1 0)
+                                     (sqrt (mget partials 0 0)))
+                                  2))))
         J-2-2 (sqrt (- (mget partials 2 2)
-                       (** (/ (mget partials 2 0)
-                              (sqrt (mget partials 0 0)))
-                           2)
-                       (** (/ (- (mget partials 2 1)
-                                 (* (/ (mget partials 2 0)
-                                       (sqrt (mget partials 0 0)))
-                                    (/ (mget partials 1 0)
-                                       (sqrt (mget partials 0 0)))))
-                              (sqrt (- (mget partials 1 1)
-                                       (** (/ (mget partials 1 0)
-                                              (sqrt (mget partials 0 0)))
-                                           2))))
-                           2)))]
+                           (** (/ (mget partials 2 0)
+                                  (sqrt (mget partials 0 0)))
+                               2)
+                           (** (/ (- (mget partials 2 1)
+                                     (* (/ (mget partials 2 0)
+                                           (sqrt (mget partials 0 0)))
+                                        (/ (mget partials 1 0)
+                                           (sqrt (mget partials 0 0)))))
+                                  (sqrt (- (mget partials 1 1)
+                                               (** (/ (mget partials 1 0)
+                                                      (sqrt (mget partials 0 0)))
+                                                   2))))
+                               2)))]
+    ;; TODO shouldn't need to do abs-sqrt here
+    ;; will need to set up a test case for this shit
     [[J-0-0 J-1-0 J-2-0]
      [J-1-0 J-1-1 J-2-1]
      [J-2-0 J-2-1 J-2-2]]))
 
 (defn step [grad J]
+  (let [ng-0 (/ (mget grad 0)
+                (mget J 0 0))
+        ng-1 (/ (- (mget grad 1)
+                   (* (mget J 1 0) ng-0))
+                (mget J 1 1))
+        ng-2 (/ (- (mget grad 2)
+                   (* (mget J 2 0) ng-0)
+                   (* (mget J 2 1) ng-1))
+                (mget J 2 2))
+        ng-2 (/ ng-2 (mget J 2 2))
+        ng-1 (/ (- ng-1
+                   (* (mget J 2 1) ng-2))
+                (mget J 1 1))
+        ng-0 (/ (- ng-0
+                   (* (mget J 2 0) ng-2)
+                   (* (mget J 1 0) ng-1))
+                (mget J 0 0))]
+    [ng-0 ng-1 ng-2]))
+
+#_(defn step [grad J]
   (let [ng-0 (/ (- (/ (mget grad 0) (mget J 0 0))
                    (* (mget J 2 0)
                       (/ (- (mget grad 2)
@@ -271,6 +296,7 @@ satellite index changes."
     [ng-0 ng-1 ng-2]))
 
 (defn convergent? [step A iterations]
+  ;;(println "             convergent?" (norm step) (squared-norm A) iterations)
   (or (and (< (norm step) 0.1)
            (< (squared-norm A) 0.1))
       (> iterations max-iterations)))
@@ -284,53 +310,82 @@ satellite index changes."
         first)))
 
 (defn trilaterate-vehicle [satellites]
+  (println "------- TRILATERATE START" satellites)
   (let [start-time (nth (first satellites) 1)
         time-diff 0.05
         path-time (+ start-time time-diff)
         theta (/ (* @tau path-time) @s)
         rotation (rotation-matrix (bigdec theta))
-        path-point (loop [vehicle-position (mmul rotation b12)
-                          iterations 0]
-                     (let [satellite-times (mmul satellites (transpose [[0 1 0 0 0]]))
-                           satellites-cartesian (mmul satellites (transpose [[0 0 1 0 0]
-                                                                             [0 0 0 1 0]
-                                                                             [0 0 0 0 1]]))
-                           sat-range (range 0 (dec (count satellites)))
-                           N (satellite-distances vehicle-position satellites-cartesian)
-                           A (A N satellite-times sat-range)
-                           coordinates (gradient-A satellites-cartesian N vehicle-position sat-range)
-                           grad (->> (map * A coordinates)
-                                     (apply +))
-                           partials (partial-derivatives satellites-cartesian
-                                                         coordinates
-                                                         N
-                                                         vehicle-position
-                                                         sat-range
-                                                         A)
-                           J (jacobian partials)
-                           step (step grad J)
-                           next-guess (- vehicle-position step)]
-                       (if (convergent? step A iterations)
-                         next-guess
-                         (recur next-guess
-                                (inc iterations)))))
+        _ (println "starting at b12" (mmul rotation b12))
+        solution (loop [vehicle-position (mmul rotation b12)
+                        iterations 0]
+                   (let [satellite-times (mmul satellites (transpose [[0 1 0 0 0]]))
+                         satellites-cartesian (mmul satellites (transpose [[0 0 1 0 0]
+                                                                           [0 0 0 1 0]
+                                                                           [0 0 0 0 1]]))
+                         sat-range (range 0 (dec (count satellites)))
+                         N (satellite-distances vehicle-position satellites-cartesian)
+                         A (A N satellite-times sat-range)
+                         coordinates (gradient-A satellites-cartesian N vehicle-position sat-range)
+                         _ (println "A")
+                         _ (pm A {:formatter #(format "%.9f" (double %))})
+                         _ (println "coordinates")
+                         _ (pm coordinates {:formatter #(format "%.9f" (double %))})
+                         grad (->> (map * A coordinates)
+                                   (apply +))
+                         _ (println "grad")
+                         _ (pm grad {:formatter #(format "%.9f" (double %))})
+                         partials (partial-derivatives satellites-cartesian
+                                                       coordinates
+                                                       N
+                                                       vehicle-position
+                                                       sat-range
+                                                       A)
+                         J (jacobian partials)
+                         _ (println "J")
+                         _ (pm J {:formatter #(format "%.9f" (double %))})
+                         step (step grad J)
+                         next-guess (- vehicle-position step)]
+                     (println "step" step)
+                     (println "next-guess" next-guess)
+                     (if (convergent? step A iterations)
+                       {:path-point next-guess
+                        :iterations iterations}
+                       (recur next-guess
+                              (inc iterations)))))
+        path-point (:path-point solution)
+        _ (println "ran in" (:iterations solution))
 
         theta (/ (* (- @tau) path-time) @s)
         rotation (rotation-matrix (bigdec theta))
+        _ (println "---- path-point" path-point)
         path-point (mmul rotation path-point)
+        _ (println "---- path-point w/ rotation" path-point)
         path-rad (cartesian->rad [(bigdec path-time)]
                                  (parse-cartesian-list [path-point]))
+        _ (println "path-rad" path-rad)
         path-dms (radians->dms path-rad)
+        ;;_ (println "path-dms" path-dms)
         path-rounded (round-seconds path-dms)]
+    (println "path-rounded" path-rounded)
     path-rounded))
 
 (sm/defn run :- DMSCoordinateList
   [data :- DataFile
    input :- CartesianSatelliteList]
   (read-constants! data)
-  (->> input
-       group-by-index-change
-       (mapcat trilaterate-vehicle)))
+
+  (println "b12-rad" (->> [[0M 40 45 55.0M 1 111 50 58.0M -1 1372.0M]]
+                          dms->radians))
+  (println "initial b12" (->> [[0M 40 45 55.0M 1 111 50 58.0M -1 1372.0M]]
+                              dms->radians
+                              rad->cartesian
+                              first))
+  (let [out (->> input
+                 group-by-index-change
+                 (mapcat trilaterate-vehicle))]
+    ;;(println "out" out)
+    out))
 
 (defn -main [& args]
   (let [data (-> "data.dat"

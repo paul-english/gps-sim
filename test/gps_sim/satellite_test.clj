@@ -60,7 +60,8 @@
       => true)
 
     (fact "Program does the right stuff"
-      (let [data (-> "data.dat" file->matrix (get-column 0) parse-data)
+      (let [
+            data (-> "data.dat" file->matrix (get-column 0) parse-data)
             input (parse-dms-list [[12123.0 40 45 55.0 1 111 50 58.0 -1 1372.0] [12124.0 40 45 55.0 1 111 50 58.0 -1 1372.0]])
             results (run data input)]
         (shape results) => [16 5]
@@ -84,6 +85,27 @@
                           (just [17 (roughly 12123.9321) (roughly 4942411.176984259) (roughly -1.796329047680593E7) (roughly 1.8939954441975158E7)])
                           (just [20 (roughly 12123.9302) (roughly 17904260.819928236) (roughly -1.680258096219933E7) (roughly 1.0145926510738155E7)])])))
 
+    (fact "Sattelite works at the North Pole"
+      (let [data (-> "data.dat" file->matrix (get-column 0) parse-data)
+            np-input (parse-dms-list [[152.3 40 45 55.0 1 111 50 58.0 -1 1372.0]
+                                      [153.3 44 2 51.33 1 96 59 34.13 -1 1280.53]
+                                      [154.3 47 19 47.66 1 82 8 10.26 -1 1189.06]
+                                      [155.3 50 36 44.0 1 67 16 46.4 -1 1097.6]
+                                      [156.3 53 53 40.33 1 52 25 22.53 -1 1006.13]
+                                      [157.3 57 10 36.66 1 37 33 58.66 -1 914.66]
+                                      [158.3 60 27 33.0 1 22 42 34.8 -1 823.2]
+                                      [159.3 63 44 29.33 1 7 51 10.93 -1 731.73]
+                                      [160.3 67 1 25.66 1 7 0 12.93 1 640.26]
+                                      [161.3 70 18 22.0 1 21 51 36.8 1 548.8]
+                                      [162.3 73 35 18.33 1 36 43 0.66 1 457.33]
+                                      [163.3 76 52 14.66 1 51 34 24.53 1 365.86]
+                                      [164.3 80 9 11.0 1 66 25 48.4 1 274.4]
+                                      [165.3 83 26 7.33 1 81 17 12.26 1 182.93]
+                                      [166.3 86 43 3.66 1 96 8 36.13 1 91.46]
+                                      [167.3 90 0 0.0 1 111 0 0.0 1 0.0]])]
+        ;; Just checking that it doesn't err, the output should be correct
+        (run data np-input) => anything))
+
     (future-facts "Satellite generates the right output for each data file"
-      (doseq [data-file data-files]
-        (test-data-file :satellite data-file)))))
+                  (doseq [data-file data-files]
+                    (test-data-file :satellite data-file)))))

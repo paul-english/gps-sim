@@ -4,10 +4,11 @@
         gps-sim.receiver
         clojure.core.matrix
         clojure.core.matrix.operators)
-  (:require [gps-sim.utils.io :refer [file->matrix]]
+  (:require [clojure.java.io :refer [resource]]
+            [gps-sim.utils.io :refer [file->matrix]]
             [gps-sim.utils.schemas :refer [parse-data
                                            parse-cartesian-satellite-list]]
-            [gps-sim.helpers :refer [test-data-file data-files]]))
+            [gps-sim.helpers :refer [test-data-file data-files split-output]]))
 
 (def input (parse-cartesian-satellite-list
             [[3 12122.917273538935 2.605234313778725E7 2986153.9652697924 4264669.833325115]
@@ -64,6 +65,19 @@
             results (run data input)]
         results => (just [(just [(roughly 12123.0) 40 45 (roughly 55.0) 1 111 50 (roughly 58.0) -1 (roughly 1372.0)])
                           (just [(roughly 12124.0) 40 45 (roughly 55.0) 1 111 50 (roughly 58.0) -1 (roughly 1371.99)])])))
+
+    (fact "Receiver doesn't blow up at the Poles"
+      (println "--------------------------------------------------")
+      (println "testing receiver at NP")
+      (println "--------------------------------------------------")
+      (let [data (-> "data.dat" file->matrix (get-column 0) parse-data)
+            input (-> "expected-np-satellite.out"
+                      resource
+                      slurp
+                      split-output
+                      parse-cartesian-satellite-list)
+            results (run data input)]
+        results => anything))
 
     (future-facts "Receiver generates the right output for each data file"
                   (doseq [data-file data-files]
