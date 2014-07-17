@@ -59,13 +59,10 @@
   (fact "Program does the right stuff"
     (let [data (-> "data.dat" file->matrix (get-column 0))
           results (run data input)]
-      results => (just [(just [(roughly 12123.0) 40 45 (roughly 55.0) 1 111 50 (roughly 58.0) -1 (roughly 1372.0)])
-                        (just [(roughly 12124.0) 40 45 (roughly 55.0) 1 111 50 (roughly 58.0) -1 (roughly 1371.99)])])))
+      results => (just [(just [(roughly 12123.0 0.1) 40 45 (roughly 55.0) 1 111 50 (roughly 58.0) -1 (roughly 1372.0 0.01)])
+                        (just [(roughly 12124.0 0.1) 40 45 (roughly 55.0) 1 111 50 (roughly 58.0) -1 (roughly 1371.99 0.01)])])))
 
   (fact "Receiver doesn't blow up at the Poles"
-    (println "--------------------------------------------------")
-    (println "testing receiver at NP")
-    (println "--------------------------------------------------")
     (let [data (-> "data.dat" file->matrix (get-column 0))
           input (-> "expected-np-satellite.out"
                     resource
